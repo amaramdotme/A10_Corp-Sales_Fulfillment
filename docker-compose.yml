@@ -20,6 +20,8 @@ services:
       - "5003:5003"
     environment:
       - BACKEND_URL=http://backend:8000
+    volumes:
+      - ./src/frontend:/app
     networks:
       - app-network
     depends_on:

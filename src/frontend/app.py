@@ -7,7 +7,7 @@ import uuid
 # Configuration
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
-# Using 'zinc' theme for a neutral, professional look similar to the screenshot
+# Using 'zinc' theme in light mode for the clean Google-style look
 hdrs = Theme.zinc.headers(mode='light')
 app, rt = fast_app(hdrs=hdrs, live=True)
 
@@ -22,12 +22,35 @@ async def call_backend(path, method="GET", json=None):
         resp.raise_for_status()
         return resp.json()
 
+# Helper for icons
+def ArrowLeftIcon(cls=""):
+    return Svg(cls=cls, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewBox="0 0 24 24", fill="none", stroke="currentColor", stroke_width="2", stroke_linecap="round", stroke_linejoin="round")(
+        Path(d="m12 19-7-7 7-7"),
+        Path(d="M19 12H5")
+    )
+
+def CheckIcon(cls=""):
+    return Svg(cls=cls, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewBox="0 0 24 24", fill="none", stroke="currentColor", stroke_width="2", stroke_linecap="round", stroke_linejoin="round")(
+        Path(d="M20 6 9 17l-5-5")
+    )
+
 @rt("/")
 async def index():
-    return Title("A10 Corp - Sales Fulfillment"), Container(cls='mt-10 max-w-3xl')(
-        Card(
-            H3("Client Onboarding"),
-            P("Please fill out the company details to get started.", cls="text-muted text-sm mb-6"),
+    return Title("A10 Corp - Sales Fulfillment"), Container(cls='mt-6 md:mt-16 max-w-5xl px-4 md:px-6')(
+        Div(cls="mb-6 md:mb-10")(
+            H1("A10 Corp", cls="text-lg md:text-xl font-medium text-zinc-900"),
+        ),
+        Div(cls="flex items-center gap-4 mb-6 md:mb-8")(
+            A(href="#")(
+                ArrowLeftIcon(cls="text-zinc-600 hover:text-zinc-900 w-5 h-5 md:w-6 md:h-6")
+            ),
+            H2("Client Onboarding", cls="text-2xl md:text-3xl font-normal text-zinc-800")
+        ),
+        Card(cls="p-6 md:p-12 shadow-sm border-zinc-200 bg-white rounded-2xl")(
+            Div(cls="mb-8 md:mb-10")(
+                H3("Keep track of your submissions", cls="text-lg md:text-xl font-medium text-zinc-900"),
+                P("Provide company information to initiate the service agreement.", cls="text-zinc-500 text-sm md:text-base mt-2"),
+            ),
             id="onboarding-container"
         )(
             basic_info_form()
@@ -35,63 +58,73 @@ async def index():
     )
 
 def basic_info_form():
+    input_cls = "bg-white border-zinc-200 h-10 md:h-12 focus:ring-zinc-200 focus:border-zinc-400 rounded-lg w-full"
+    label_cls = "text-sm font-medium text-zinc-700 mb-2 block"
+    
     return Form(hx_post="/engagement-info", hx_target="#onboarding-container", hx_swap="innerHTML")(
-        Grid(cols=2, gap=4)(
-            Label("Company Name", Input(name="company_name", placeholder="Acme Corp", required=True)),
-            Label("Industry", Input(name="industry", placeholder="Technology", required=True)),
+        Grid(cols=1, gap=6)(
+            Div(cls="border-b border-zinc-100 pb-2 mb-2")(
+                P("Company Details", cls="text-base font-semibold text-zinc-900")
+            ),
+            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10")(
+                Div(P("Company Name", cls=label_cls), Input(name="company_name", placeholder="e.g. Acme Corp", required=True, cls=input_cls)),
+                Div(P("Industry", cls=label_cls), Input(name="industry", placeholder="e.g. Technology", required=True, cls=input_cls)),
+            ),
+            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10")(
+                Div(P("Contact Name", cls=label_cls), Input(name="contact_name", placeholder="Full Name", required=True, cls=input_cls)),
+                Div(P("Contact Email", cls=label_cls), Input(name="contact_email", type="email", placeholder="email@example.com", required=True, cls=input_cls)),
+            ),
+            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10")(
+                Div(P("Contact Phone", cls=label_cls), Input(name="contact_phone", placeholder="+1...", required=True, cls=input_cls)),
+                Div(P("Company Size", cls=label_cls), Input(name="company_size", type="number", placeholder="100", required=True, cls=input_cls)),
+            ),
+            Div(P("Company Address", cls=label_cls), TextArea(name="address", placeholder="Full street address", required=True, rows=4, cls="bg-white border-zinc-200 focus:ring-zinc-200 focus:border-zinc-400 rounded-lg p-3 w-full")),
         ),
-        Grid(cols=2, gap=4, cls="mt-4")(
-            Label("Contact Name", Input(name="contact_name", placeholder="John Doe", required=True)),
-            Label("Contact Email", Input(name="contact_email", type="email", placeholder="john@example.com", required=True)),
-        ),
-        Grid(cols=2, gap=4, cls="mt-4")(
-            Label("Contact Phone", Input(name="contact_phone", placeholder="+1 (555) 000-0000", required=True)),
-            Label("Company Size", Input(name="company_size", type="number", placeholder="100", required=True)),
-        ),
-        Label("Company Address", TextArea(name="address", placeholder="1234 Market St, San Francisco, CA", required=True), cls="mt-4"),
         
-        Div(cls="flex justify-end mt-6")(
-            Button("Next: Engagement Details", type="submit", cls=ButtonT.primary)
+        Div(cls="flex justify-end mt-8 md:mt-12 pt-6 md:pt-8 border-t border-zinc-100")(
+            Button("Next step", type="submit", cls=ButtonT.primary + " h-10 md:h-12 px-8 md:px-10 rounded-full text-sm md:text-base font-medium w-full md:w-auto")
         )
     )
 
 @rt("/engagement-info")
 async def post_engagement_info(request: Request):
-    # Store basic info in hidden inputs for the next step
     form_data = await request.form()
-    
-    # Hidden fields to carry over Phase 1 data
     hidden_fields = [Input(type="hidden", name=k, value=v) for k, v in form_data.items()]
     
+    input_cls = "bg-white border-zinc-200 h-10 md:h-12 focus:ring-zinc-200 focus:border-zinc-400 rounded-lg w-full"
+    label_cls = "text-sm font-medium text-zinc-700 mb-2 block"
+
     return Div(
-        H3("Engagement Details"),
-        P("Tell us about your project needs.", cls="text-muted text-sm mb-6"),
+        Div(cls="mb-8 md:mb-10")(
+            H3("Engagement details", cls="text-lg md:text-xl font-medium text-zinc-900"),
+            P("Define the scope and budget for this project.", cls="text-zinc-500 text-sm md:text-base mt-2"),
+        ),
         Form(hx_post="/submit-onboarding", hx_target="#onboarding-container", hx_swap="innerHTML")(
             *hidden_fields,
-            Grid(cols=2, gap=4)(
-                Label("Service Type",
-                    Select(
-                        Option("Select an option", disabled=True, selected=True, value=""),
-                        Option("DevOps Consulting", value="devops"),
-                        Option("Cloud Migration", value="migration"),
-                        Option("Site Reliability Engineering", value="sre"),
-                        Option("Custom Development", value="custom"),
-                        name="service_type", 
-                        required=True,
-                        cls="w-full" 
-                    )
+            Grid(cols=1, gap=6)(
+                Div(cls="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10")(
+                    Div(P("Service Type", cls=label_cls),
+                        Select(
+                            Option("Select a service", disabled=True, selected=True, value=""),
+                            Option("DevOps Consulting", value="devops"),
+                            Option("Cloud Migration", value="migration"),
+                            Option("Site Reliability Engineering", value="sre"),
+                            Option("Custom Development", value="custom"),
+                            name="service_type", required=True, cls=input_cls
+                        )
+                    ),
+                    Div(P("Budget Range", cls=label_cls), Input(name="budget_range", placeholder="e.g. $50k - $100k", required=True, cls=input_cls)),
                 ),
-                Label("Budget Range", Input(name="budget_range", placeholder="$50k - $100k", required=True)),
+                Div(cls="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10")(
+                    Div(P("Project Scope", cls=label_cls), Input(name="project_scope", placeholder="Short summary", required=True, cls=input_cls)),
+                    Div(P("Timeline", cls=label_cls), Input(name="timeline", placeholder="e.g. 3 months", required=True, cls=input_cls)),
+                ),
+                Div(P("Additional Notes", cls=label_cls), TextArea(name="notes", placeholder="Any specific requirements...", rows=5, cls="bg-white border-zinc-200 focus:ring-zinc-200 focus:border-zinc-400 rounded-lg p-3 w-full")),
             ),
-            Grid(cols=2, gap=4, cls="mt-4")(
-                Label("Project Scope", Input(name="project_scope", placeholder="Migration to Azure", required=True)),
-                Label("Timeline", Input(name="timeline", placeholder="3 months", required=True)),
-            ),
-            Label("Additional Notes", TextArea(name="notes", placeholder="Any specific requirements..."), cls="mt-4"),
             
-            Div(cls="flex justify-between mt-6")(
-                Button("Back", hx_get="/", hx_target="#onboarding-container", hx_swap="innerHTML", cls=ButtonT.secondary),
-                Button("Complete Submission", type="submit", cls=ButtonT.primary)
+            Div(cls="flex flex-col-reverse md:flex-row justify-between mt-8 md:mt-12 pt-6 md:pt-8 border-t border-zinc-100 gap-4 md:gap-0")(
+                Button("Back", hx_get="/", hx_target="#onboarding-container", hx_swap="innerHTML", cls="text-zinc-500 hover:text-zinc-900 font-medium px-4 h-10 md:h-12 flex items-center justify-center"),
+                Button("Complete Submission", type="submit", cls=ButtonT.primary + " h-10 md:h-12 px-8 md:px-10 rounded-full text-sm md:text-base font-medium w-full md:w-auto")
             )
         )
     )
@@ -100,7 +133,6 @@ async def post_engagement_info(request: Request):
 async def submit(request: Request):
     form_data = await request.form()
     
-    # Construct the payload for backend
     payload = {
         "basic_info": {
             "company_name": form_data.get("company_name"),
@@ -124,24 +156,26 @@ async def submit(request: Request):
         result = await call_backend("/submit", method="POST", json=payload)
         client_id = result.get("client_id")
         
-        return Div(cls="text-center p-10")(
-            Div("✅", cls="text-6xl text-green-500 mb-4"),
-            H2("Submission Received!", cls="text-2xl font-bold"),
-            P("We have safely recorded your onboarding request.", cls="text-muted mt-2"),
+        return Div(cls="text-center py-12")(
+            Div(cls="bg-green-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6")(
+                CheckIcon(cls="text-green-600 text-3xl")
+            ),
+            H2("Submission Successful", cls="text-2xl font-medium text-zinc-900"),
+            P("We've received your onboarding request and created a reference ID.", cls="text-zinc-500 mt-2"),
             
-            Div(cls="mt-6 bg-zinc-100 p-4 rounded border border-zinc-200 inline-block")(
-                P("Reference ID", cls="text-xs uppercase tracking-wider text-zinc-500"),
-                P(client_id, cls="text-xl font-mono font-bold text-zinc-800")
+            Div(cls="mt-10 mb-10 p-6 bg-zinc-50 border border-zinc-100 rounded-xl inline-block min-w-[280px]")(
+                P("Reference ID", cls="text-xs uppercase tracking-[0.1em] font-bold text-zinc-400 mb-2"),
+                P(client_id, cls="text-2xl font-mono font-medium text-zinc-800 tracking-tight")
             ),
             
-            Div(cls="mt-8")(
-                A("Submit Another", href="/", cls=ButtonT.primary)
+            Div(cls="pt-6 border-t border-zinc-100")(
+                A("Return to home", href="/", cls="text-zinc-600 hover:text-zinc-900 font-medium")
             )
         )
     except Exception as e:
-        return Div(cls="bg-red-50 text-red-700 p-4 rounded border border-red-200")(
-            H3("Error Submitting Form", cls="font-bold"),
-            P(str(e), cls="text-sm mt-1")
+        return Div(cls="bg-red-50 text-red-700 p-6 rounded-xl border border-red-100")(
+            H3("Submission failed", cls="font-bold"),
+            P(str(e), cls="text-sm mt-2")
         )
 
 if __name__ == "__main__":
