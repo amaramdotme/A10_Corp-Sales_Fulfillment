@@ -17,5 +17,8 @@ venv/
 
 # OS
 .DS_Store
-Thumbs.dbscreenshots/
+Thumbs.db
+
+# Project Specific
+screenshots/
 .sesskey
