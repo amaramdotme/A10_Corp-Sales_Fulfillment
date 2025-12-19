@@ -7,7 +7,8 @@ import uuid
 # Configuration
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
-hdrs = Theme.blue.headers(mode='light')
+# Using 'zinc' theme for a neutral, professional look similar to the screenshot
+hdrs = Theme.zinc.headers(mode='light')
 app, rt = fast_app(hdrs=hdrs, live=True)
 
 # Helper to call backend
@@ -23,10 +24,10 @@ async def call_backend(path, method="GET", json=None):
 
 @rt("/")
 async def index():
-    return Title("A10 Corp - Sales Fulfillment"), Container(cls='mt-10')(
+    return Title("A10 Corp - Sales Fulfillment"), Container(cls='mt-10 max-w-3xl')(
         Card(
-            H1("Client Onboarding"),
-            P("Please fill out the following information to get started.", cls="text-muted"),
+            H3("Client Onboarding"),
+            P("Please fill out the company details to get started.", cls="text-muted text-sm mb-6"),
             id="onboarding-container"
         )(
             basic_info_form()
@@ -35,16 +36,23 @@ async def index():
 
 def basic_info_form():
     return Form(hx_post="/engagement-info", hx_target="#onboarding-container", hx_swap="innerHTML")(
-        Grid(cols=2)(
-            Input(name="company_name", placeholder="Company Name", required=True),
-            Input(name="industry", placeholder="Industry", required=True),
-            Input(name="contact_name", placeholder="Contact Person Name", required=True),
-            Input(name="contact_email", type="email", placeholder="Contact Email", required=True),
-            Input(name="contact_phone", placeholder="Contact Phone", required=True),
-            Input(name="company_size", type="number", placeholder="Company Size (Employees)", required=True),
+        Grid(cols=2, gap=4)(
+            Label("Company Name", Input(name="company_name", placeholder="Acme Corp", required=True)),
+            Label("Industry", Input(name="industry", placeholder="Technology", required=True)),
         ),
-        TextArea(name="address", placeholder="Company Address", required=True, cls="mt-4"),
-        Button("Next: Engagement Details", type="submit", cls="mt-4 w-full")
+        Grid(cols=2, gap=4, cls="mt-4")(
+            Label("Contact Name", Input(name="contact_name", placeholder="John Doe", required=True)),
+            Label("Contact Email", Input(name="contact_email", type="email", placeholder="john@example.com", required=True)),
+        ),
+        Grid(cols=2, gap=4, cls="mt-4")(
+            Label("Contact Phone", Input(name="contact_phone", placeholder="+1 (555) 000-0000", required=True)),
+            Label("Company Size", Input(name="company_size", type="number", placeholder="100", required=True)),
+        ),
+        Label("Company Address", TextArea(name="address", placeholder="1234 Market St, San Francisco, CA", required=True), cls="mt-4"),
+        
+        Div(cls="flex justify-end mt-6")(
+            Button("Next: Engagement Details", type="submit", cls=ButtonT.primary)
+        )
     )
 
 @rt("/engagement-info")
@@ -56,26 +64,35 @@ async def post_engagement_info(request: Request):
     hidden_fields = [Input(type="hidden", name=k, value=v) for k, v in form_data.items()]
     
     return Div(
-        H2("Engagement Specific Details"),
+        H3("Engagement Details"),
+        P("Tell us about your project needs.", cls="text-muted text-sm mb-6"),
         Form(hx_post="/submit-onboarding", hx_target="#onboarding-container", hx_swap="innerHTML")(
             *hidden_fields,
-            Grid(cols=1, gap=4)(
-                Select(
-                    Option("Select an option", disabled=True, selected=True, value=""),
-                    Option("DevOps Consulting", value="devops"),
-                    Option("Cloud Migration", value="migration"),
-                    Option("Site Reliability Engineering", value="sre"),
-                    Option("Custom Development", value="custom"),
-                    label="Service Type",
-                    name="service_type", 
-                    required=True
+            Grid(cols=2, gap=4)(
+                Label("Service Type",
+                    Select(
+                        Option("Select an option", disabled=True, selected=True, value=""),
+                        Option("DevOps Consulting", value="devops"),
+                        Option("Cloud Migration", value="migration"),
+                        Option("Site Reliability Engineering", value="sre"),
+                        Option("Custom Development", value="custom"),
+                        name="service_type", 
+                        required=True,
+                        cls="w-full" 
+                    )
                 ),
-                Input(name="project_scope", placeholder="Project Scope Summary", required=True),
-                Input(name="timeline", placeholder="Timeline Expectations (e.g., 3 months)", required=True),
-                Input(name="budget_range", placeholder="Budget Range (e.g., $50k - $100k)", required=True),
-                TextArea(name="notes", placeholder="Additional Notes"),
+                Label("Budget Range", Input(name="budget_range", placeholder="$50k - $100k", required=True)),
             ),
-            Button("Complete Submission", type="submit", cls="mt-4 w-full")
+            Grid(cols=2, gap=4, cls="mt-4")(
+                Label("Project Scope", Input(name="project_scope", placeholder="Migration to Azure", required=True)),
+                Label("Timeline", Input(name="timeline", placeholder="3 months", required=True)),
+            ),
+            Label("Additional Notes", TextArea(name="notes", placeholder="Any specific requirements..."), cls="mt-4"),
+            
+            Div(cls="flex justify-between mt-6")(
+                Button("Back", hx_get="/", hx_target="#onboarding-container", hx_swap="innerHTML", cls=ButtonT.secondary),
+                Button("Complete Submission", type="submit", cls=ButtonT.primary)
+            )
         )
     )
 
@@ -108,17 +125,23 @@ async def submit(request: Request):
         client_id = result.get("client_id")
         
         return Div(cls="text-center p-10")(
-            Div("✅", cls="text-4xl text-success mb-4"),
-            H2("Submission Successful!"),
-            P(f"Your unique Client ID is:", cls="mt-4"),
-            H3(client_id, cls="font-mono text-2xl bg-muted p-2 rounded mt-2"),
-            P("Please keep this ID for your records. Our team will contact you shortly.", cls="mt-4 text-muted"),
-            A("Return Home", href="/", cls="mt-6 block text-primary underline")
+            Div("✅", cls="text-6xl text-green-500 mb-4"),
+            H2("Submission Received!", cls="text-2xl font-bold"),
+            P("We have safely recorded your onboarding request.", cls="text-muted mt-2"),
+            
+            Div(cls="mt-6 bg-zinc-100 p-4 rounded border border-zinc-200 inline-block")(
+                P("Reference ID", cls="text-xs uppercase tracking-wider text-zinc-500"),
+                P(client_id, cls="text-xl font-mono font-bold text-zinc-800")
+            ),
+            
+            Div(cls="mt-8")(
+                A("Submit Another", href="/", cls=ButtonT.primary)
+            )
         )
     except Exception as e:
-        return Div(cls="bg-red-100 text-red-700 p-4 rounded")(
-            H3("Error Submitting Form"),
-            P(str(e))
+        return Div(cls="bg-red-50 text-red-700 p-4 rounded border border-red-200")(
+            H3("Error Submitting Form", cls="font-bold"),
+            P(str(e), cls="text-sm mt-1")
         )
 
 if __name__ == "__main__":
