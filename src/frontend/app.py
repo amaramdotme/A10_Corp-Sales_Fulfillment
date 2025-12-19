@@ -36,20 +36,20 @@ def CheckIcon(cls=""):
 
 @rt("/")
 async def index():
-    return Title("A10 Corp - Sales Fulfillment"), Container(cls='mt-6 md:mt-16 max-w-5xl px-4 md:px-6')(
-        Div(cls="mb-6 md:mb-10")(
-            H1("A10 Corp", cls="text-lg md:text-xl font-medium text-zinc-900"),
+    return Title("A10 Corp - Sales Fulfillment"), Container(cls='mt-4 md:mt-8 max-w-5xl px-4 md:px-6')(
+        Div(cls="mb-4 md:mb-6 flex justify-end")(
+            H1("A10 Corp", cls="bg-sky-50 text-sky-900 px-6 py-3 rounded-xl shadow-md inline-block border border-sky-100 text-xl md:text-2xl font-semibold tracking-wide"),
         ),
-        Div(cls="flex items-center gap-4 mb-6 md:mb-8")(
+        Div(cls="flex items-center gap-4 mb-4 md:mb-6")(
             A(href="#")(
                 ArrowLeftIcon(cls="text-zinc-600 hover:text-zinc-900 w-5 h-5 md:w-6 md:h-6")
             ),
             H2("Client Onboarding", cls="text-2xl md:text-3xl font-normal text-zinc-800")
         ),
-        Card(cls="p-6 md:p-12 shadow-sm border-zinc-200 bg-white rounded-2xl")(
-            Div(cls="mb-8 md:mb-10")(
+        Card(cls="p-6 md:p-8 shadow-sm border-zinc-200 bg-white rounded-2xl")(
+            Div(cls="mb-6 md:mb-8")(
                 H3("Keep track of your submissions", cls="text-lg md:text-xl font-medium text-zinc-900"),
-                P("Provide company information to initiate the service agreement.", cls="text-zinc-500 text-sm md:text-base mt-2"),
+                P("Provide company information to initiate the service agreement.", cls="text-zinc-500 text-sm md:text-base mt-1"),
             ),
             id="onboarding-container"
         )(
@@ -58,31 +58,31 @@ async def index():
     )
 
 def basic_info_form():
-    input_cls = "bg-white border-zinc-200 h-10 md:h-12 focus:ring-zinc-200 focus:border-zinc-400 rounded-lg w-full"
-    label_cls = "text-sm font-medium text-zinc-700 mb-2 block"
+    input_cls = "bg-white border-zinc-200 h-10 focus:ring-zinc-200 focus:border-zinc-400 rounded-lg w-full"
+    label_cls = "text-sm font-medium text-zinc-700 mb-1 block"
     
     return Form(hx_post="/engagement-info", hx_target="#onboarding-container", hx_swap="innerHTML")(
-        Grid(cols=1, gap=6)(
+        Grid(cols=1, gap=4)(
             Div(cls="border-b border-zinc-100 pb-2 mb-2")(
                 P("Company Details", cls="text-base font-semibold text-zinc-900")
             ),
-            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10")(
+            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6")(
                 Div(P("Company Name", cls=label_cls), Input(name="company_name", placeholder="e.g. Acme Corp", required=True, cls=input_cls)),
                 Div(P("Industry", cls=label_cls), Input(name="industry", placeholder="e.g. Technology", required=True, cls=input_cls)),
             ),
-            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10")(
+            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6")(
                 Div(P("Contact Name", cls=label_cls), Input(name="contact_name", placeholder="Full Name", required=True, cls=input_cls)),
                 Div(P("Contact Email", cls=label_cls), Input(name="contact_email", type="email", placeholder="email@example.com", required=True, cls=input_cls)),
             ),
-            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10")(
+            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6")(
                 Div(P("Contact Phone", cls=label_cls), Input(name="contact_phone", placeholder="+1...", required=True, cls=input_cls)),
                 Div(P("Company Size", cls=label_cls), Input(name="company_size", type="number", placeholder="100", required=True, cls=input_cls)),
             ),
-            Div(P("Company Address", cls=label_cls), TextArea(name="address", placeholder="Full street address", required=True, rows=4, cls="bg-white border-zinc-200 focus:ring-zinc-200 focus:border-zinc-400 rounded-lg p-3 w-full")),
+            Div(P("Company Address", cls=label_cls), TextArea(name="address", placeholder="Full street address", required=True, rows=3, cls="bg-white border-zinc-200 focus:ring-zinc-200 focus:border-zinc-400 rounded-lg p-2 w-full")),
         ),
         
-        Div(cls="flex justify-end mt-8 md:mt-12 pt-6 md:pt-8 border-t border-zinc-100")(
-            Button("Next step", type="submit", cls=ButtonT.primary + " h-10 md:h-12 px-8 md:px-10 rounded-full text-sm md:text-base font-medium w-full md:w-auto")
+        Div(cls="flex justify-end mt-6 md:mt-8 pt-4 md:pt-6 border-t border-zinc-100")(
+            Button("Next step", type="submit", cls=ButtonT.primary + " h-10 px-8 rounded-full text-sm font-medium")
         )
     )
 
