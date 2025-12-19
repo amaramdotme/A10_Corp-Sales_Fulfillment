@@ -1,0 +1,7 @@
+python-fasthtml
+monsterui
+httpx
+python-dotenv
+uvicorn
+pytest
+pytest-asyncio
