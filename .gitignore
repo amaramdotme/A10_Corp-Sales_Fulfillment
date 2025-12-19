@@ -20,5 +20,6 @@ venv/
 Thumbs.db
 
 # Project Specific
-screenshots/
 .sesskey
+data/
+*.db

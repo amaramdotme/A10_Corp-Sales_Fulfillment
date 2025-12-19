@@ -6,7 +6,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=sqlite:///./test.db
+      - DATABASE_URL=sqlite:////app/data/sales_fulfillment.db
+    volumes:
+      - ./data:/app/data
     networks:
       - app-network
 

@@ -21,7 +21,7 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Manual testing verified frontend-backend integration and UI flow.
 
 ## TODO List
-- [ ] **Backend Persistence:** Implement SQLite integration in `main.py` (currently in-memory).
+- [x] **Backend Persistence:** Implement SQLite integration in `main.py` (currently in-memory).
 - [ ] **Frontend Polish:** Ensure `Select` components and other MonsterUI elements use correct headers/imports.
 - [ ] **Infrastructure:** Complete Terraform configuration for AKS, Entra ID, and Azure Monitor.
 - [ ] **Cloud Deploy:** Implement CI/CD pipelines (GitHub Actions) for cloud deployment.
