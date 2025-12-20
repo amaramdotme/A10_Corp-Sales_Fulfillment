@@ -1,4 +1,5 @@
 from fasthtml.common import *
+from fasthtml.components import Path as ft_Path
 from monsterui.all import *
 import httpx
 import os
@@ -24,13 +25,13 @@ async def call_backend(path, method="GET", json=None):
 # Helper for icons
 def ArrowLeftIcon(cls=""):
     return Svg(cls=cls, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewBox="0 0 24 24", fill="none", stroke="currentColor", stroke_width="2", stroke_linecap="round", stroke_linejoin="round")(
-        Path(d="m12 19-7-7 7-7"),
-        Path(d="M19 12H5")
+        ft_Path(d="m12 19-7-7 7-7"),
+        ft_Path(d="M19 12H5")
     )
 
 def CheckIcon(cls=""):
     return Svg(cls=cls, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewBox="0 0 24 24", fill="none", stroke="currentColor", stroke_width="2", stroke_linecap="round", stroke_linejoin="round")(
-        Path(d="M20 6 9 17l-5-5")
+        ft_Path(d="M20 6 9 17l-5-5")
     )
 
 @rt("/")

@@ -36,3 +36,8 @@ exclude = [
 "tests/frontend/test_app.py" = ["F403", "F405"]
 # Ignore module level import not at top of file for tests
 "tests/backend/test_main.py" = ["E402"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:support for supplying keyword arguments to pathlib.PurePath:DeprecationWarning",
+]

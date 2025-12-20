@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlmodel import SQLModel, Field, Session, create_engine
 from pydantic import BaseModel
 from typing import Optional
+from contextlib import asynccontextmanager
 import os
 import uuid
 
@@ -53,12 +54,16 @@ class Submission(SQLModel, table=True):
     # Full Payload (JSON Storage for Flexibility)
     payload: str
 
-# --- App Definition ---
-app = FastAPI(title="A10 Corp Sales Fulfillment API")
-
-@app.on_event("startup")
-def on_startup():
+# --- Lifespan Events ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Create tables
     create_db_and_tables()
+    yield
+    # Shutdown: (Add cleanup logic here if needed)
+
+# --- App Definition ---
+app = FastAPI(title="A10 Corp Sales Fulfillment API", lifespan=lifespan)
 
 @app.get("/health")
 async def health_check():
