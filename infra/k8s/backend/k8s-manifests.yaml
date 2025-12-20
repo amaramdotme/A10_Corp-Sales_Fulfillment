@@ -1,10 +1,22 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sqlite-data
+  namespace: sales-fulfillment
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
   namespace: sales-fulfillment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -16,8 +28,15 @@ spec:
       containers:
       - name: backend
         image: a10-backend:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "sqlite:////app/data/sales_fulfillment.db"
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
         readinessProbe:
           httpGet:
             path: /health
@@ -26,6 +45,10 @@ spec:
           httpGet:
             path: /health
             port: 8000
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: sqlite-data
 ---
 apiVersion: v1
 kind: Service

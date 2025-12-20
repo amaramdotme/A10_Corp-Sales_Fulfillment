@@ -16,6 +16,7 @@ spec:
       containers:
       - name: frontend
         image: a10-frontend:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5003
         env:
