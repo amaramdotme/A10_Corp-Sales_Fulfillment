@@ -1,53 +1,68 @@
 from fastapi.testclient import TestClient
+from sqlmodel import Session, SQLModel, create_engine
+from src.backend.main import app, get_session
 import os
+import tempfile
 
-# Use a local file for testing to avoid connection isolation issues with :memory:
-TEST_DB = "test_run.db"
-os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB}"
+# 1. Create a temporary file for the database
+test_db_file = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+test_db_path = test_db_file.name
+test_db_file.close()
 
-from src.backend.main import app, create_db_and_tables
+# 2. Create a specific engine for this test session
+sqlite_url = f"sqlite:///{test_db_path}"
+connect_args = {"check_same_thread": False}
+engine = create_engine(sqlite_url, connect_args=connect_args)
 
-# Explicitly create tables for the test environment
-create_db_and_tables()
+# 3. Create tables in this temporary database
+SQLModel.metadata.create_all(engine)
+
+# 4. Define a dependency override
+def get_session_override():
+    with Session(engine) as session:
+        yield session
+
+# 5. Apply the override to the app
+app.dependency_overrides[get_session] = get_session_override
 
 client = TestClient(app)
 
+def teardown_module(module):
+    # Cleanup: remove the temporary file
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+
 def test_health_check():
+    print("\n[TEST] Running health check...")
     response = client.get("/health")
+    print(f"[TEST] Health check response: {response.status_code} - {response.json()}")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
 
 def test_submit_onboarding():
+    print("\n[TEST] Testing client onboarding submission...")
     payload = {
         "basic_info": {
             "company_name": "Test Corp",
             "address": "123 Test St",
-            "industry": "Tech",
-            "contact_name": "John Doe",
-            "contact_email": "john@example.com",
-            "contact_phone": "1234567890",
-            "company_size": 100
+            "industry": "Testing",
+            "contact_name": "Tester",
+            "contact_email": "test@example.com",
+            "contact_phone": "555-1234",
+            "company_size": 50
         },
         "engagement_info": {
             "service_type": "devops",
-            "project_scope": "Test Scope",
+            "project_scope": "Full automation",
             "timeline": "3 months",
-            "budget_range": "$50k",
-            "notes": "No notes"
+            "budget_range": "$50k-$100k"
         }
     }
+    
     response = client.post("/submit", json=payload)
-    if response.status_code != 200:
-        print(f"Error Response: {response.text}")
-    assert response.status_code == 200
     data = response.json()
+    print(f"[TEST] Submission response: {response.status_code} - {data}")
+    
+    assert response.status_code == 200
     assert "client_id" in data
-    assert data["client_id"].startswith("CL-")
-
-# Cleanup after tests
-def teardown_module(module):
-    if os.path.exists(TEST_DB):
-        try:
-            os.remove(TEST_DB)
-        except PermissionError:
-            pass # Sometimes file is locked on Windows/WSL
+    assert data["message"] == "Submission received successfully"
