@@ -36,9 +36,9 @@ jobs:
       env:
         PYTHONPATH: .
         DATABASE_URL: sqlite:///test.db
-      run: pytest tests/backend
+      run: pytest -s --cov=src/backend tests/backend
 
     - name: Frontend Unit Tests
       env:
         PYTHONPATH: .
-      run: pytest tests/frontend
+      run: pytest -s --cov=src/frontend tests/frontend

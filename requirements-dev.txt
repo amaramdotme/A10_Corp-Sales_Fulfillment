@@ -3,3 +3,4 @@ httpx
 pytest-asyncio
 ruff #cod style and linting
 bandit #security scanning
+pytest-cov
