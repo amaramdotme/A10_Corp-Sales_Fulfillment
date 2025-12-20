@@ -2,7 +2,6 @@ from fasthtml.common import *
 from monsterui.all import *
 import httpx
 import os
-import uuid
 
 # Configuration
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")

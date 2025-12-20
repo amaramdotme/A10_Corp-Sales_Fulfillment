@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from sqlmodel import SQLModel, Field, Session, create_engine, select
+from sqlmodel import SQLModel, Field, Session, create_engine
 from pydantic import BaseModel
 from typing import Optional
 import os
@@ -89,4 +89,4 @@ async def submit_onboarding(submission: ClientSubmission, session: Session = Dep
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000) # nosec

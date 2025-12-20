@@ -22,11 +22,12 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Reorganized repository structure for Dev/Stage/Prod (Helm & Terraform).
 - ✅ Fixed local automated tests (backend DB initialization and frontend UI text).
 - ✅ Verified persistence in Kind cluster using PVCs.
+- ✅ Set up Dev CI workflow (Linting, Security, Unit Tests) via GitHub Actions.
 
 ## TODO List
 - [ ] **Infrastructure:** Complete Terraform configuration for AKS, Entra ID, and Azure Monitor.
-- [ ] **Cloud Deploy:** Implement CI/CD pipelines (GitHub Actions) for cloud deployment.
-- [ ] **Security:** Implement Azure AD (Entra ID) authentication.
+- [ ] **Cloud Deploy:** Implement Job #2 (Stage) and Job #3 (Prod) in GitHub Actions.
+- [ ] **Security:** Implement Azure AD (Entra ID) authentication for application.
 - [ ] **Observability:** Set up Azure Monitor and Log Analytics integration.
 
 ## Next Session Plan

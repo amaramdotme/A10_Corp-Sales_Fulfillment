@@ -1,0 +1,38 @@
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "charts",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore star imports for FastHTML/MonsterUI files
+"src/frontend/app.py" = ["F403", "F405"]
+"tests/frontend/test_app.py" = ["F403", "F405"]
+# Ignore module level import not at top of file for tests
+"tests/backend/test_main.py" = ["E402"]
