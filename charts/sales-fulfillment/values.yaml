@@ -1,0 +1,30 @@
+# Default values for sales-fulfillment.
+global:
+  namespace: sales-fulfillment
+
+backend:
+  replicaCount: 1
+  image:
+    repository: a10-backend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 80
+  persistence:
+    size: 1Gi
+    mountPath: /app/data
+  env:
+    databaseUrl: "sqlite:////app/data/sales_fulfillment.db"
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: a10-frontend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 80
+  env:
+    backendUrl: "http://backend.sales-fulfillment.svc.cluster.local"

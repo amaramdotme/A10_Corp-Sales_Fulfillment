@@ -6,7 +6,7 @@ import os
 import uuid
 
 # --- Database Setup ---
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./test.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///data/sales_fulfillment.db")
 # check_same_thread=False is needed for SQLite with FastAPI/multi-threading
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 

@@ -23,6 +23,6 @@ def test_engagement_info_step():
     }
     response = client.post("/engagement-info", data=data)
     assert response.status_code == 200
-    assert "Engagement Specific Details" in response.text
+    assert "Engagement details" in response.text
     # Verify hidden fields are present
     assert 'name="company_name" value="Test Corp"' in response.text
