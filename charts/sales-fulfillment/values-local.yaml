@@ -1,0 +1,19 @@
+# Local development values (kind)
+global:
+  namespace: sales-fulfillment
+
+backend:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+  persistence:
+    size: 100Mi
+
+frontend:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP

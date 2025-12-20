@@ -12,3 +12,9 @@ kubectl get all -n sales-fulfillment
 kubectl get pods -n sales-fulfillment -w  
 
 kubectl port-forward svc/frontend 7004:80 -n sales-fulfillment
+
+
+# test scripts - local unit test 
+source .venv/bin/activate
+
+PYTHONPATH=. pytest tests/

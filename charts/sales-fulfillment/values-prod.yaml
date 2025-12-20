@@ -1,0 +1,41 @@
+# Production environment values (Azure AKS - High Availability)
+global:
+  namespace: sales-fulfillment-prod
+
+backend:
+  replicaCount: 3
+  image:
+    repository: myacr.azurecr.io/a10-backend
+    pullPolicy: Always
+    tag: "prod"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+frontend:
+  replicaCount: 3
+  image:
+    repository: myacr.azurecr.io/a10-frontend
+    pullPolicy: Always
+    tag: "prod"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80

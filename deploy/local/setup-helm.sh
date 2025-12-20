@@ -27,6 +27,7 @@ echo "Installing application with Helm..."
 helm upgrade --install sales-fulfillment-app charts/sales-fulfillment \
   --create-namespace \
   --namespace sales-fulfillment \
+  -f charts/sales-fulfillment/values-local.yaml \
   --wait
 
 echo "Done! You can access the app by port-forwarding:"

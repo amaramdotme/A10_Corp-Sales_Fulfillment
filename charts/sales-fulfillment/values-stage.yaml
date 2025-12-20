@@ -1,0 +1,17 @@
+# Staging environment values (Azure AKS - Pre-Prod)
+global:
+  namespace: sales-fulfillment-stage
+
+backend:
+  replicaCount: 2
+  image:
+    repository: myacr.azurecr.io/a10-backend
+    pullPolicy: Always
+    tag: "stage"
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: myacr.azurecr.io/a10-frontend
+    pullPolicy: Always
+    tag: "stage"
