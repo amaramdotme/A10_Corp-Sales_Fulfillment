@@ -68,11 +68,25 @@ jobs:
           helm upgrade --install sales-app ./charts/sales-fulfillment \
             --namespace sales-fulfillment \
             --create-namespace \
+            -f ./charts/sales-fulfillment/values-dev.yaml \
             --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
             --set backend.image.tag=${{ github.sha }} \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.sha }} \
             --set global.environment=dev
+
+      - name: Get Frontend External IP
+        run: |
+          echo "Waiting for External IP..."
+          for i in {1..10}; do
+            IP=$(kubectl get svc frontend -n sales-fulfillment -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            if [ -n "$IP" ]; then
+              echo "APP_URL=http://$IP" >> $GITHUB_ENV
+              echo "Frontend URL: http://$IP"
+              break
+            fi
+            sleep 10
+          done
 
   teardown-dev:
     runs-on: ubuntu-latest

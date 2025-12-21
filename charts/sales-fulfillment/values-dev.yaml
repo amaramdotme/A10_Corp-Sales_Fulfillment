@@ -1,13 +1,13 @@
 # Development environment values (Azure AKS - Cost Optimized)
 global:
-  namespace: sales-fulfillment-dev
+  namespace: sales-fulfillment
 
 backend:
   replicaCount: 1
   image:
-    repository: myacr.azurecr.io/a10-backend
+    repository: acra10corpsales.azurecr.io/sales-backend
     pullPolicy: Always
-    tag: "dev"
+    tag: "latest"
   resources:
     requests:
       cpu: 100m
@@ -19,9 +19,11 @@ backend:
 frontend:
   replicaCount: 1
   image:
-    repository: myacr.azurecr.io/a10-frontend
+    repository: acra10corpsales.azurecr.io/sales-frontend
     pullPolicy: Always
-    tag: "dev"
+    tag: "latest"
+  service:
+    type: LoadBalancer
   resources:
     requests:
       cpu: 50m

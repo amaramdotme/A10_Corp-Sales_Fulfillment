@@ -28,7 +28,12 @@ kind: Service
 metadata:
   name: frontend
   namespace: {{ .Values.global.namespace }}
+  {{- with .Values.frontend.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
+  type: {{ .Values.frontend.service.type | default "ClusterIP" }}
   selector:
     app: frontend
   ports:
