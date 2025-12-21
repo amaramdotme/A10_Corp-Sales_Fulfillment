@@ -38,8 +38,20 @@ This document captures key architectural decisions for the A10 Corp Sales Fulfil
 *   **Decision:** Use **Azure Kubernetes Service (AKS)** for production/stage and **Kind** for local development.
 *   **Consequences:** Requires Helm charts for unified deployment logic across environments.
 
-## 6. CI/CD: GitHub Actions
-*   **Status:** Accepted
-*   **Context:** We need an automated pipeline for testing, linting, building, and deploying.
-*   **Decision:** Use **GitHub Actions**.
-*   **Consequences:** Integrated directly with the source code repository.
+## 7. Authentication: GitHub OIDC (Keyless)
+*   **Status:** Accepted (2025-12-21)
+*   **Context:** We need a secure way for GitHub Actions to authenticate with Azure without storing long-lived Client Secrets (passwords).
+*   **Decision:** Use **GitHub OIDC Federated Identity**.
+*   **Consequences:** Improves security posture. Requires one-time manual setup of Federated Credentials in Azure AD for each GitHub Environment.
+
+## 8. Kubernetes Version Selection (LTS vs. Official)
+*   **Status:** Accepted (2025-12-21)
+*   **Context:** Azure AKS now designates certain versions (like 1.29, 1.30) as LTS, which are restricted to Premium tiers or specific support plans.
+*   **Decision:** Target **KubernetesOfficial** versions (e.g., 1.32) for Dev/Stage environments to remain on the standard/free tier.
+*   **Consequences:** Requires more frequent version bumps but avoids Premium tier costs for non-production environments.
+
+## 9. VM SKU Selection (D-Series for Stability)
+*   **Status:** Accepted (2025-12-21)
+*   **Context:** B-Series burstable instances (like B2s) can have restricted availability or quota limitations in certain regions (e.g., eastus).
+*   **Decision:** Prefer **Standard_D2s_v3** (D-Series) for AKS nodes.
+*   **Consequences:** Slightly higher cost than B-series, but provides consistent performance and significantly better regional availability/quota support.

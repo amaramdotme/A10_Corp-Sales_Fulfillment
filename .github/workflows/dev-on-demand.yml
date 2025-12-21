@@ -11,6 +11,7 @@ env:
   ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SALES_SUBSCRIPTION_ID: ${{ secrets.AZURE_SALES_SUBSCRIPTION_ID }}
   TF_STATE_RG: rg-root-iac
   TF_STATE_STORAGE_ACCOUNT: storerootblob
   TF_STATE_CONTAINER: workloads-dev
@@ -60,7 +61,7 @@ jobs:
           docker push $ACR_NAME.azurecr.io/sales-backend:${{ github.sha }}
 
       - name: Get AKS Credentials
-        run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME
+        run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
 
       - name: Deploy to AKS
         run: |
@@ -87,7 +88,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Get AKS Credentials
-        run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME
+        run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
 
       - name: Uninstall Helm Release
         run: helm uninstall sales-app --namespace sales-fulfillment

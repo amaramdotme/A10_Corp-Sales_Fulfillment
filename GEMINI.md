@@ -24,7 +24,9 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Verified persistence in Kind cluster using PVCs.
 - ✅ Set up Dev CI workflow (Linting, Security, Unit Tests with Coverage) via GitHub Actions.
 - ✅ Added E2E Integration Tests (Kind + Playwright) to CI pipeline.
-- ✅ Implemented AKS Terraform Module (Stage environment configured).
+- ✅ Implemented AKS Terraform Module (Stage and Dev environments configured).
+- ✅ Set up GitHub OIDC for keyless Azure authentication.
+- ✅ Implemented **Dev On-Demand** workflow for manual cloud lab testing.
 - ✅ Defined Platform Infrastructure requirements for Azure Stage environment.
 
 ## TODO List
@@ -35,8 +37,8 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 
 ## Next Session Plan
 1.  **Infrastructure Completion:**
-    - Implement Terraform module for Azure SQL / CosmosDB.
-    - Provision the AKS Cluster and Database via Terraform.
-2.  **CI/CD Completion:**
-    - Create `deploy-dev.yml` for automated deployment to Azure Dev.
+    - Implement Terraform module for Azure SQL.
+    - Provision Azure SQL and link to AKS clusters via Connection Strings (Secrets).
+2.  **CI/CD Refinement:**
+    - Extend `dev-on-demand` to include smoke tests in Azure.
     - Implement Helm deployment to Stage AKS.
