@@ -31,7 +31,7 @@ module "aks" {
 module "sql" {
   source = "../../modules/azure-sql"
 
-  server_name         = "sql-a10corp-sales-dev"
+  server_name         = "sql-a10sales-dev-v2"
   database_name       = "db-sales-fulfillment"
   resource_group_name = "rg-a10corp-sales-dev"
   location            = "eastus2" # Policy updated to allow eastus2 for SQL
