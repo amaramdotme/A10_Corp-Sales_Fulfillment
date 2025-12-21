@@ -17,3 +17,5 @@ frontend:
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
+  env:
+    liveReload: "true"

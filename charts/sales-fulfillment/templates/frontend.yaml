@@ -22,6 +22,8 @@ spec:
         env:
         - name: BACKEND_URL
           value: {{ .Values.frontend.env.backendUrl | quote }}
+        - name: LIVE_RELOAD
+          value: {{ .Values.frontend.env.liveReload | quote }}
 ---
 apiVersion: v1
 kind: Service

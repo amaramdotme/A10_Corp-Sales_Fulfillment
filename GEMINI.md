@@ -31,7 +31,7 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Fixed and codified AKS-to-ACR permissions and NSG routing rules.
 
 ## TODO List
-- [ ] **Infrastructure:** Implement Database Terraform module in this repo.
+- [x] **Infrastructure:** Implement Database Terraform module in this repo.
 - [ ] **Cloud Deploy:** Implement Job #2 (Stage) and Job #3 (Prod) in GitHub Actions.
 - [ ] **Security:** Implement Azure AD (Entra ID) authentication for application.
 - [ ] **Observability:** Set up Azure Monitor and Log Analytics integration.

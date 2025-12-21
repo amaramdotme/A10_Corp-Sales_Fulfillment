@@ -27,3 +27,24 @@ module "aks" {
     ManagedBy   = "Terraform"
   }
 }
+
+module "sql" {
+  source = "../../modules/azure-sql"
+
+  server_name         = "sql-a10corp-sales-dev"
+  database_name       = "db-sales-fulfillment"
+  resource_group_name = "rg-a10corp-sales-dev"
+  location            = "eastus"
+  
+  admin_username      = "sqladmin"
+  admin_password      = "P@ssw0rd123456!" # Note: Use variables/keyvault in production
+
+  aks_subnet_id       = module.aks.node_subnet_id
+  sku_name            = "Basic"
+
+  tags = {
+    Environment = "Dev"
+    Workload    = "SalesFulfillment"
+    ManagedBy   = "Terraform"
+  }
+}

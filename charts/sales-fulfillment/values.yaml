@@ -28,3 +28,4 @@ frontend:
     port: 80
   env:
     backendUrl: "http://backend.sales-fulfillment.svc.cluster.local"
+    liveReload: "false"

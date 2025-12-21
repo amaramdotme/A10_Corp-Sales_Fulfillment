@@ -6,10 +6,11 @@ import os
 
 # Configuration
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+LIVE_RELOAD = os.getenv("LIVE_RELOAD", "false").lower() == "true"
 
 # Using 'zinc' theme in light mode for the clean Google-style look
 hdrs = Theme.zinc.headers(mode='light')
-app, rt = fast_app(hdrs=hdrs, live=True)
+app, rt = fast_app(hdrs=hdrs, live=LIVE_RELOAD)
 
 # Helper to call backend
 async def call_backend(path, method="GET", json=None):
