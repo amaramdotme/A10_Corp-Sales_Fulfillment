@@ -69,3 +69,13 @@ variable "dns_service_ip" {
   type        = string
   default     = "172.16.0.10"
 }
+
+variable "acr_id" {
+  description = "The Resource ID of the Azure Container Registry to attach to the AKS cluster."
+  type        = string
+}
+
+variable "node_nsg_name" {
+  description = "The name of the existing Network Security Group for the AKS node subnet."
+  type        = string
+}

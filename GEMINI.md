@@ -28,6 +28,7 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Set up GitHub OIDC for keyless Azure authentication.
 - ✅ Implemented **Dev On-Demand** workflow for manual cloud lab testing.
 - ✅ Defined Platform Infrastructure requirements for Azure Stage environment.
+- ✅ Fixed and codified AKS-to-ACR permissions and NSG routing rules.
 
 ## TODO List
 - [ ] **Infrastructure:** Implement Database Terraform module in this repo.

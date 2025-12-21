@@ -48,3 +48,39 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   tags = var.tags
 }
+
+# Grant AcrPull to the Kubelet Identity
+resource "azurerm_role_assignment" "acr_pull" {
+  scope                = var.acr_id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
+}
+
+# Add NSG rules to the existing NSG for the node pool
+resource "azurerm_network_security_rule" "allow_http" {
+  name                        = "AllowHttpInboundFromInternet"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "80"
+  source_address_prefix       = "Internet"
+  destination_address_prefix  = "*"
+  resource_group_name         = data.azurerm_resource_group.rg.name
+  network_security_group_name = var.node_nsg_name
+}
+
+resource "azurerm_network_security_rule" "allow_lb_probes" {
+  name                        = "AllowAzureLBInbound"
+  priority                    = 110
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "AzureLoadBalancer"
+  destination_address_prefix  = "*"
+  resource_group_name         = data.azurerm_resource_group.rg.name
+  network_security_group_name = var.node_nsg_name
+}

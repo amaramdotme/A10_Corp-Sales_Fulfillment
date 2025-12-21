@@ -9,6 +9,10 @@ module "aks" {
   vnet_name           = "vnet-a10corp-sales-dev"
   subnet_name         = "snet-a10corp-sales-dev-aks-nodes"
   identity_name       = "id-a10corp-sales-dev"
+  
+  # New fixes for ACR access and NSG rules
+  acr_id              = "/subscriptions/fdb297a9-2ece-469c-808d-a8227259f6e8/resourceGroups/rg-root-iac/providers/Microsoft.ContainerRegistry/registries/acra10corpsales"
+  node_nsg_name       = "nsg-a10corp-sales-dev-aks-nodes"
 
   # Dev Specifics: Lower node count, Cost optimized
   node_count          = 1
