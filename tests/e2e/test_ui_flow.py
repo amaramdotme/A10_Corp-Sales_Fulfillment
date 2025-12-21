@@ -1,4 +1,3 @@
-import pytest
 from playwright.sync_api import Page, expect
 
 # Define the base URL - this can be overridden by environment variables if needed
