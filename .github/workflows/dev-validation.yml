@@ -81,6 +81,8 @@ jobs:
       - name: Install Helm Chart
         run: |
           helm install sales-app ./charts/sales-fulfillment \
+            --namespace sales-fulfillment \
+            --create-namespace \
             --set backend.image.repository=sales-backend \
             --set backend.image.tag=local \
             --set backend.image.pullPolicy=Never \
