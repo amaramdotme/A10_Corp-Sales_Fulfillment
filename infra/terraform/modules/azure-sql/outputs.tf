@@ -21,6 +21,6 @@ output "connection_string_jdbc" {
 }
 
 output "connection_string_sqlalchemy" {
-  value     = "mssql+pyodbc://${var.admin_username}:${var.admin_password}@${azurerm_mssql_server.sql.fully_qualified_domain_name}/${azurerm_mssql_database.db.name}?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=no&Connection+Timeout=30"
+  value     = "mssql+pyodbc://${urlencode(var.admin_username)}:${urlencode(var.admin_password)}@${azurerm_mssql_server.sql.fully_qualified_domain_name}/${azurerm_mssql_database.db.name}?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=no&Connection+Timeout=30"
   sensitive = true
 }
