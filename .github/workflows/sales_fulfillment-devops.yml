@@ -1,4 +1,4 @@
-name: Dev Validation
+name: sales_fulfillment-devops
 
 on:
   push:

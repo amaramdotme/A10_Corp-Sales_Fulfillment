@@ -21,7 +21,7 @@ variable "dns_prefix" {
 variable "kubernetes_version" {
   description = "The version of Kubernetes to use."
   type        = string
-  default     = "1.29" # or a recent supported version
+  default     = "1.30" # Bumped from 1.29 to avoid LTS errors
 }
 
 variable "vnet_name" {
