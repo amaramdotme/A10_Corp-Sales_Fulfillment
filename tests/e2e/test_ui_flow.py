@@ -23,12 +23,13 @@ def test_full_onboarding_flow(page: Page):
     page.click('button:has-text("Next step")')
 
     # 3. Verify transition to Engagement Info Form (Step 2)
-    # We check for a field that only exists in the second step
-    expect(page.locator('select[name="service_type"]')).to_be_visible()
     expect(page.locator("h3")).to_contain_text("Engagement details")
 
     # 4. Fill out Engagement Info Form
-    page.select_option('select[name="service_type"]', "devops")
+    # MonsterUI replaces standard select with a custom dropdown, so we interact with that
+    page.click('button:has-text("Select a service")')
+    page.click('li:has-text("DevOps Consulting")')
+    
     page.fill('input[name="budget_range"]', "$50k - $100k")
     page.fill('input[name="project_scope"]', "Full migration to Azure")
     page.fill('input[name="timeline"]', "3 months")
@@ -38,8 +39,8 @@ def test_full_onboarding_flow(page: Page):
     page.click('button:has-text("Complete Submission")')
 
     # 5. Verify Success Screen
-    expect(page.locator("h2")).to_contain_text("Submission Successful")
-    expect(page.locator("text=Reference ID")).to_be_visible()
+    expect(page.locator("text=Submission Successful")).to_be_visible()
+    expect(page.get_by_text("Reference ID", exact=True)).to_be_visible()
     
     # Optional: Print the Client ID found on page for debugging logs
     # client_id = page.locator("p.font-mono").inner_text()
