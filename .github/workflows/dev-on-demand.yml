@@ -34,17 +34,6 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Check for Existing Deployment
-        run: |
-          echo "Checking if AKS cluster $CLUSTER_NAME exists in $RG_NAME..."
-          if az aks show --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID &> /dev/null; then
-            echo "::error::AKS Cluster '$CLUSTER_NAME' already exists! A Dev environment is currently active."
-            echo "Please approve the 'teardown-dev' job of the previous run or manually delete the cluster before starting a new one."
-            exit 1
-          else
-            echo "No existing cluster found. Proceeding with deployment."
-          fi
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
