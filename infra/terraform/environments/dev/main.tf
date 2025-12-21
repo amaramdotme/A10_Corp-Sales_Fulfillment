@@ -34,13 +34,13 @@ module "sql" {
   server_name         = "sql-a10corp-sales-dev"
   database_name       = "db-sales-fulfillment"
   resource_group_name = "rg-a10corp-sales-dev"
-  location            = "eastus"
+  location            = "eastus2" # Policy updated to allow eastus2 for SQL
   
   admin_username      = "sqladmin"
   admin_password      = "P@ssw0rd123456!" # Note: Use variables/keyvault in production
 
   aks_subnet_id       = module.aks.node_subnet_id
-  sku_name            = "GP_Gen5_2" # General Purpose tier might have better availability in eastus
+  sku_name            = "Basic"
 
   tags = {
     Environment = "Dev"

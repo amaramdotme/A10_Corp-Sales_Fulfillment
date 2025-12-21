@@ -29,7 +29,7 @@ Generated on: 2025-12-20
 | Policy Assignment Name | Definition | Scope | Effect |
 |------------------------|------------|-------|--------|
 | `enforce-env-tag` | Require a tag on resource groups | Resource Groups | Deny |
-| `allowed-locations` | Allowed locations | Resources | Deny (except `eastus`) |
+| `allowed-locations` | Allowed locations | Resources | Deny (except `eastus`, `eastus2`) |
 | `allowed-vm-skus` | Allowed virtual machine size SKUs | Virtual Machines | Deny (B, D series only) |
 | `secure-transfer` | Secure transfer to storage accounts | Storage Accounts | Deny |
 
