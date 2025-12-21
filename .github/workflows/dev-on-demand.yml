@@ -13,8 +13,8 @@ env:
   ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
   TF_STATE_RG: rg-root-iac
   TF_STATE_STORAGE_ACCOUNT: storerootblob
-  TF_STATE_CONTAINER: workloads
-  TF_STATE_KEY: sales-fulfillment-dev.tfstate
+  TF_STATE_CONTAINER: workloads-dev
+  TF_STATE_KEY: sales-fulfillment.tfstate
   ACR_NAME: acra10corpsales
   RG_NAME: rg-a10corp-sales-dev
   CLUSTER_NAME: aks-a10corp-sales-dev
