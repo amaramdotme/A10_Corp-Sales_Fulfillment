@@ -21,7 +21,7 @@ variable "dns_prefix" {
 variable "kubernetes_version" {
   description = "The version of Kubernetes to use."
   type        = string
-  default     = "1.32" # Bumped to 1.32 to avoid LTS errors
+  default     = "1.32" 
 }
 
 variable "vnet_name" {
@@ -48,11 +48,24 @@ variable "node_count" {
 variable "vm_size" {
   description = "The VM size for the default node pool."
   type        = string
-  default     = "Standard_D2s_v3" # Updated to D2s_v3 for better availability
+  default     = "Standard_D2s_v3"
 }
 
 variable "tags" {
   description = "A mapping of tags to assign to the resource."
   type        = map(string)
   default     = {}
+}
+
+# Networking - Defaults chosen to avoid 10.0.0.0/16 VNet overlap
+variable "service_cidr" {
+  description = "The CIDR to use for Kubernetes services (must not overlap with VNet)."
+  type        = string
+  default     = "172.16.0.0/16"
+}
+
+variable "dns_service_ip" {
+  description = "IP address within the Kubernetes service CIDR to use for DNS."
+  type        = string
+  default     = "172.16.0.10"
 }
