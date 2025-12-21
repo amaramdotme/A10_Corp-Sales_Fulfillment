@@ -34,13 +34,13 @@ module "sql" {
   server_name         = "sql-a10corp-sales-dev"
   database_name       = "db-sales-fulfillment"
   resource_group_name = "rg-a10corp-sales-dev"
-  location            = "eastus"
+  location            = "eastus2" # Testing if policy allows eastus2, since eastus is restricted for SQL
   
   admin_username      = "sqladmin"
   admin_password      = "P@ssw0rd123456!" # Note: Use variables/keyvault in production
 
   aks_subnet_id       = module.aks.node_subnet_id
-  sku_name            = "S0" # Upgraded from Basic to avoid eastus restrictions
+  sku_name            = "S0" 
 
   tags = {
     Environment = "Dev"
