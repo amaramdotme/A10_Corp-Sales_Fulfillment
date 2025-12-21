@@ -58,3 +58,15 @@ variable "public_ip" {
   default     = null
 }
 
+variable "enable_vnet_rule" {
+  description = "Whether to enable the VNet rule (requires SQL and VNet to be in the same region)."
+  type        = bool
+  default     = false
+}
+
+variable "allow_azure_services" {
+  description = "Whether to allow all Azure services to access the SQL Server (needed for cross-region access)."
+  type        = bool
+  default     = true
+}
+
