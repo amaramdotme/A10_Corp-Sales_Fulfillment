@@ -58,8 +58,11 @@ jobs:
             -backend-config="key=$TF_STATE_KEY"
 
       - name: Terraform Apply
+        id: tf-apply
         working-directory: infra/terraform/environments/dev
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply -auto-approve
+          echo "db_url=$(terraform output -raw database_url)" >> $GITHUB_OUTPUT
 
       - name: ACR Login
         run: az acr login --name $ACR_NAME
@@ -82,6 +85,7 @@ jobs:
             -f ./charts/sales-fulfillment/values-dev.yaml \
             --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
             --set backend.image.tag=${{ github.sha }} \
+            --set backend.env.databaseUrl="${{ steps.tf-apply.outputs.db_url }}" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.sha }} \
             --set global.environment=dev
@@ -112,8 +116,25 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: infra/terraform/environments/dev
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$TF_STATE_RG" \
+            -backend-config="storage_account_name=$TF_STATE_STORAGE_ACCOUNT" \
+            -backend-config="container_name=$TF_STATE_CONTAINER" \
+            -backend-config="key=$TF_STATE_KEY"
+
       - name: Get AKS Credentials
         run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
 
       - name: Uninstall Helm Release
-        run: helm uninstall sales-app --namespace sales-fulfillment
+        run: helm uninstall sales-app --namespace sales-fulfillment || true
+
+      - name: Terraform Destroy
+        working-directory: infra/terraform/environments/dev
+        run: terraform destroy -auto-approve
+
