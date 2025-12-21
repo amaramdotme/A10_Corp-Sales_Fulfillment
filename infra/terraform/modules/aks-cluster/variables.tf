@@ -48,7 +48,7 @@ variable "node_count" {
 variable "vm_size" {
   description = "The VM size for the default node pool."
   type        = string
-  default     = "Standard_B2s" # Cost-optimized for dev/stage
+  default     = "Standard_D2s_v3" # Updated to D2s_v3 for better availability
 }
 
 variable "tags" {

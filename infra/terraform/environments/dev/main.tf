@@ -12,7 +12,7 @@ module "aks" {
 
   # Dev Specifics: Lower node count, Cost optimized
   node_count          = 1
-  vm_size             = "Standard_B2s"
+  vm_size             = "Standard_D2s_v3"
   
   # Future optimization: Add spot instance support to module
   # enable_spot_instances = true 
