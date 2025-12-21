@@ -1,0 +1,93 @@
+name: Dev On-Demand
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  TF_STATE_RG: rg-root-iac
+  TF_STATE_STORAGE_ACCOUNT: storerootblob
+  TF_STATE_CONTAINER: workloads
+  TF_STATE_KEY: sales-fulfillment-dev.tfstate
+  ACR_NAME: acra10corpsales
+  RG_NAME: rg-a10corp-sales-dev
+  CLUSTER_NAME: aks-a10corp-sales-dev
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: infra/terraform/environments/dev
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$TF_STATE_RG" \
+            -backend-config="storage_account_name=$TF_STATE_STORAGE_ACCOUNT" \
+            -backend-config="container_name=$TF_STATE_CONTAINER" \
+            -backend-config="key=$TF_STATE_KEY"
+
+      - name: Terraform Apply
+        working-directory: infra/terraform/environments/dev
+        run: terraform apply -auto-approve
+
+      - name: ACR Login
+        run: az acr login --name $ACR_NAME
+
+      - name: Build and Push Images
+        run: |
+          docker build -t $ACR_NAME.azurecr.io/sales-frontend:${{ github.sha }} -f src/frontend/Dockerfile src/frontend
+          docker build -t $ACR_NAME.azurecr.io/sales-backend:${{ github.sha }} -f src/backend/Dockerfile src/backend
+          docker push $ACR_NAME.azurecr.io/sales-frontend:${{ github.sha }}
+          docker push $ACR_NAME.azurecr.io/sales-backend:${{ github.sha }}
+
+      - name: Get AKS Credentials
+        run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME
+
+      - name: Deploy to AKS
+        run: |
+          helm upgrade --install sales-app ./charts/sales-fulfillment \
+            --namespace sales-fulfillment \
+            --create-namespace \
+            --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
+            --set backend.image.tag=${{ github.sha }} \
+            --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
+            --set frontend.image.tag=${{ github.sha }} \
+            --set global.environment=dev
+
+  teardown-dev:
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    environment: dev # Requires manual approval in GitHub settings
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get AKS Credentials
+        run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME
+
+      - name: Uninstall Helm Release
+        run: helm uninstall sales-app --namespace sales-fulfillment
