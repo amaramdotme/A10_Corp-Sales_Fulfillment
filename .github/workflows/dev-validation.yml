@@ -25,6 +25,8 @@ jobs:
         pip install -r src/backend/requirements.txt
         pip install -r src/frontend/requirements.txt
         pip install -r requirements-dev.txt
+        # Install Playwright browsers
+        playwright install chromium
 
     - name: Linting (Ruff)
       run: ruff check .
@@ -42,3 +44,63 @@ jobs:
       env:
         PYTHONPATH: .
       run: pytest -s --cov=src/frontend tests/frontend
+
+  e2e-integration-kind:
+    runs-on: ubuntu-latest
+    needs: validate-and-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest playwright pytest-playwright
+          playwright install chromium
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.9.0
+        with:
+          cluster_name: kind-dev
+
+      - name: Build Docker Images
+        run: |
+          docker build -t sales-frontend:local -f src/frontend/Dockerfile src/frontend
+          docker build -t sales-backend:local -f src/backend/Dockerfile src/backend
+
+      - name: Load Images into Kind
+        run: |
+          kind load docker-image sales-frontend:local --name kind-dev
+          kind load docker-image sales-backend:local --name kind-dev
+
+      - name: Install Helm Chart
+        run: |
+          helm install sales-app ./charts/sales-fulfillment \
+            --set backend.image.repository=sales-backend \
+            --set backend.image.tag=local \
+            --set backend.image.pullPolicy=Never \
+            --set frontend.image.repository=sales-frontend \
+            --set frontend.image.tag=local \
+            --set frontend.image.pullPolicy=Never \
+            --set global.environment=local
+
+      - name: Wait for Pods to be Ready
+        run: |
+          kubectl wait --namespace sales-fulfillment \
+            --for=condition=ready pod \
+            --selector=app=frontend \
+            --timeout=180s
+
+      - name: Port Forward Frontend
+        run: |
+          kubectl port-forward svc/frontend 5003:80 -n sales-fulfillment &
+          sleep 10
+
+      - name: Run E2E Tests (Playwright)
+        run: |
+          pytest tests/e2e/test_ui_flow.py

@@ -23,18 +23,20 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Fixed local automated tests (backend DB initialization and frontend UI text).
 - ✅ Verified persistence in Kind cluster using PVCs.
 - ✅ Set up Dev CI workflow (Linting, Security, Unit Tests with Coverage) via GitHub Actions.
+- ✅ Added E2E Integration Tests (Kind + Playwright) to CI pipeline.
+- ✅ Implemented AKS Terraform Module (Stage environment configured).
 - ✅ Defined Platform Infrastructure requirements for Azure Stage environment.
 
 ## TODO List
-- [ ] **Infrastructure:** Implement AKS and Database Terraform modules in this repo.
+- [ ] **Infrastructure:** Implement Database Terraform module in this repo.
 - [ ] **Cloud Deploy:** Implement Job #2 (Stage) and Job #3 (Prod) in GitHub Actions.
 - [ ] **Security:** Implement Azure AD (Entra ID) authentication for application.
 - [ ] **Observability:** Set up Azure Monitor and Log Analytics integration.
 
 ## Next Session Plan
-1.  **Azure Integration:**
-    - Consume Platform outputs (Networking, Identities) from the landing repo.
-    - Provision the AKS Cluster and Azure SQL/CosmosDB via Terraform in this repo.
+1.  **Infrastructure Completion:**
+    - Implement Terraform module for Azure SQL / CosmosDB.
+    - Provision the AKS Cluster and Database via Terraform.
 2.  **CI/CD Completion:**
-    - Extend GitHub Actions to build Docker images and push to ACR.
+    - Create `deploy-dev.yml` for automated deployment to Azure Dev.
     - Implement Helm deployment to Stage AKS.
