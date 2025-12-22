@@ -48,6 +48,14 @@ jobs:
             -backend-config="storage_account_name=$TF_STATE_STORAGE_ACCOUNT" \
             -backend-config="container_name=$TF_STATE_CONTAINER" \
             -backend-config="key=$TF_STATE_KEY"
+      - name: Set Namespace
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
+            echo "NAMESPACE=sales-fulfillment" >> $GITHUB_ENV
+          else
+            echo "NAMESPACE=sales-fulfillment-${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+          fi
+
       - name: Get AKS Credentials
         run: |
           if az aks show --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID &> /dev/null; then
@@ -59,7 +67,7 @@ jobs:
           fi
       - name: Uninstall Helm Release
         if: env.CLUSTER_EXISTS == 'true'
-        run: helm uninstall sales-app --namespace sales-fulfillment || true
+        run: helm uninstall sales-app --namespace $NAMESPACE || true
       - name: Terraform Destroy
         working-directory: infra/terraform/environments/${{ github.event.inputs.environment }}
         run: terraform destroy -auto-approve

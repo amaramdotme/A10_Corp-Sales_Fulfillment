@@ -48,7 +48,9 @@ jobs:
 
       - name: Terraform Apply
         working-directory: infra/terraform/environments/dev
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply -auto-approve
+          echo "KUBELET_CLIENT_ID=$(terraform output -raw kubelet_identity_client_id)" >> $GITHUB_ENV
 
       - name: Wait for RBAC Propagation
         run: sleep 60
@@ -76,6 +78,7 @@ jobs:
             --set backend.image.tag=${{ github.sha }} \
             --set backend.env.storageAccountName="sta10corpsales" \
             --set backend.env.storageContainerName="backups-dev" \
+            --set backend.env.azureClientId="$KUBELET_CLIENT_ID" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.sha }} \
             --set global.environment=dev
