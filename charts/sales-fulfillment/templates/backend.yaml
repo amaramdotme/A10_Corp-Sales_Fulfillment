@@ -17,6 +17,8 @@ metadata:
   namespace: {{ .Values.global.namespace }}
 spec:
   replicas: {{ .Values.backend.replicaCount }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: backend
