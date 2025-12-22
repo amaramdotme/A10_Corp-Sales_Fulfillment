@@ -60,7 +60,7 @@ jobs:
       - name: Deploy to Main Production
         run: |
           helm upgrade --install sales-app ./charts/sales-fulfillment \
-            --namespace sales-fulfillment \
+            --namespace sales-fulfillment-prod \
             --create-namespace \
             -f ./charts/sales-fulfillment/values-prod.yaml \
             --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
@@ -68,8 +68,9 @@ jobs:
             --set backend.env.databaseUrl="${{ steps.tf-output.outputs.db_url }}" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.event.inputs.image_tag }} \
+            --set frontend.env.backendUrl="http://backend.sales-fulfillment-prod.svc.cluster.local" \
             --set global.environment=prod
 
       - name: Cleanup Green Version
         run: |
-          helm uninstall sales-app-green --namespace sales-fulfillment || true
+          helm uninstall sales-app-green --namespace sales-fulfillment-prod || true

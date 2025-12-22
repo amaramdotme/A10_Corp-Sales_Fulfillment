@@ -5,13 +5,15 @@ global:
 backend:
   replicaCount: 2
   image:
-    repository: myacr.azurecr.io/a10-backend
+    repository: acra10corpsales.azurecr.io/sales-backend
     pullPolicy: Always
-    tag: "stage"
+    tag: "latest"
 
 frontend:
   replicaCount: 2
   image:
-    repository: myacr.azurecr.io/a10-frontend
+    repository: acra10corpsales.azurecr.io/sales-frontend
     pullPolicy: Always
-    tag: "stage"
+    tag: "latest"
+  env:
+    liveReload: "false"

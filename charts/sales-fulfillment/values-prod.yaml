@@ -5,9 +5,9 @@ global:
 backend:
   replicaCount: 3
   image:
-    repository: myacr.azurecr.io/a10-backend
+    repository: acra10corpsales.azurecr.io/sales-backend
     pullPolicy: Always
-    tag: "prod"
+    tag: "latest"
   resources:
     requests:
       cpu: 500m
@@ -24,9 +24,11 @@ backend:
 frontend:
   replicaCount: 3
   image:
-    repository: myacr.azurecr.io/a10-frontend
+    repository: acra10corpsales.azurecr.io/sales-frontend
     pullPolicy: Always
-    tag: "prod"
+    tag: "latest"
+  env:
+    liveReload: "false"
   resources:
     requests:
       cpu: 200m
