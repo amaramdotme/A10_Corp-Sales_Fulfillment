@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from sqlmodel import SQLModel, Field, Session, create_engine
+from sqlmodel import SQLModel, Field, Session, create_engine, String
 from pydantic import BaseModel
 from typing import Optional
 from contextlib import asynccontextmanager
@@ -47,15 +47,15 @@ class ClientSubmission(BaseModel):
 # SQLModel for Database Persistence (Hybrid: Key fields + JSON payload)
 class Submission(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    client_id: str = Field(index=True, unique=True)
+    client_id: str = Field(sa_type=String(50), index=True, unique=True)
     
     # Key Business Fields (Promoted for Indexing/Querying)
-    company_name: str = Field(index=True)
-    industry: str = Field(index=True)
-    service_type: str = Field(index=True)
+    company_name: str = Field(sa_type=String(255), index=True)
+    industry: str = Field(sa_type=String(100), index=True)
+    service_type: str = Field(sa_type=String(100), index=True)
     
     # Full Payload (JSON Storage for Flexibility)
-    payload: str
+    payload: str = Field(sa_type=String) # VARCHAR(MAX) equivalent
 
 # --- Lifespan Events ---
 @asynccontextmanager
