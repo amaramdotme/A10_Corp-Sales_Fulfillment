@@ -181,7 +181,9 @@ jobs:
         id: tf-apply
         working-directory: infra/terraform/environments/stage
         run: |
-          echo "db_url=$(terraform output -raw database_url)" >> $GITHUB_OUTPUT
+          DB_URL=$(terraform output -raw database_url)
+          if [ -z "$DB_URL" ]; then echo "Error: database_url output is empty"; exit 1; fi
+          echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
 
       - name: Wait for RBAC Propagation
         run: sleep 60
@@ -265,7 +267,9 @@ jobs:
         id: tf-apply
         working-directory: infra/terraform/environments/prod
         run: |
-          echo "db_url=$(terraform output -raw database_url)" >> $GITHUB_OUTPUT
+          DB_URL=$(terraform output -raw database_url)
+          if [ -z "$DB_URL" ]; then echo "Error: database_url output is empty"; exit 1; fi
+          echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
 
       - name: Wait for RBAC Propagation
         run: sleep 60

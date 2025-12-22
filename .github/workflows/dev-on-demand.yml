@@ -46,12 +46,13 @@ jobs:
             -backend-config="container_name=$TF_STATE_CONTAINER" \
             -backend-config="key=$TF_STATE_KEY"
 
-      - name: Terraform Apply
+      - name: Get Database URL
         id: tf-apply
         working-directory: infra/terraform/environments/dev
         run: |
-          terraform apply -auto-approve
-          echo "db_url=$(terraform output -raw database_url)" >> $GITHUB_OUTPUT
+          DB_URL=$(terraform output -raw database_url)
+          if [ -z "$DB_URL" ]; then echo "Error: database_url output is empty"; exit 1; fi
+          echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
 
       - name: Wait for RBAC Propagation
         run: sleep 60
