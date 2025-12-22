@@ -10,11 +10,12 @@
 - [x] **Fix Dev On-Demand workflow**:
     - Added missing Terraform Apply step.
 - [x] **Fix Prod Deployment**: Reduced node count for vCPU quota and resolved NSG conflicts.
+- [x] **Fix SQLite Deadlock**: Implemented `Recreate` deployment strategy to handle RWO volume locking.
 
 ## Infrastructure
 - [x] **Database Strategy**: Migrated from Azure SQL to SQLite with Azure Blob Storage backups.
 - [x] **Storage Network Access**: Foundation team updated storage account to allow all traffic.
-- [x] **Blob Backup Fix**: Resolved `AuthorizationPermissionMismatch` by correcting storage account name in workflows.
+- [x] **Blob Backup Fix**: Resolved `AuthorizationPermissionMismatch` and `Multiple user assigned identities exist` by correcting storage account name and explicitly setting `AZURE_CLIENT_ID`.
 - [x] **Observability**: Set up Azure Monitor and Log Analytics integration.
 
 ## Cost Management

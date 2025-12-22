@@ -90,14 +90,17 @@ This document captures key architectural decisions for the A10 Corp Sales Fulfil
     *   Authentication via managed identity (Storage Blob Data Contributor role)
 *   **Reasoning:** Simplifies the stack and aligns with the organization's existing storage patterns for shared accounts.
 
-## 14. Backend Replica Limit (SQLite Compatibility)
+## 14. Backend Replica Limit and Deployment Strategy (SQLite Compatibility)
 *   **Status:** Accepted (2025-12-22)
-*   **Context:** Using SQLite with a standard ReadWriteOnce (RWO) persistent volume prevents multiple pods from concurrently mounting the volume.
-*   **Decision:** Hard-limit the backend to **1 replica** in all environments.
+*   **Context:** Using SQLite with a standard ReadWriteOnce (RWO) persistent volume prevents multiple pods from concurrently mounting the volume. Standard `RollingUpdate` attempts to start a new pod before killing the old one, causing a deadlock.
+*   **Decision:** 
+    *   Hard-limit the backend to **1 replica** in all environments.
+    *   Set the Deployment strategy to **`type: Recreate`**.
 *   **Consequences:**
-    *   Reduces horizontal scalability.
-    *   Rolling updates must be handled carefully (scale to 0, then to 1) to release volume locks.
-    *   HA would require migration back to a shared database (PostgreSQL/Azure SQL).
+    *   Ensures the old pod is terminated (releasing the volume lock) before the new pod starts.
+    *   Causes a brief period of downtime (seconds) during deployments.
+    *   Fixes the "Multi-Attach" deadlock issue permanently for SQLite-based workloads.
+    *   Horizontal scaling or zero-downtime updates would require migration to a shared database (e.g., PostgreSQL/Azure SQL).
 
 ## 15. Observability: Azure Monitor for Containers (OMS Agent)
 *   **Status:** Accepted (2025-12-22)
