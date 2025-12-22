@@ -16,6 +16,8 @@ backend:
     mountPath: /app/data
   env:
     databaseUrl: "sqlite:////app/data/sales_fulfillment.db"
+    storageAccountName: ""
+    storageContainerName: ""
 
 frontend:
   replicaCount: 2

@@ -10,37 +10,13 @@ module "aks" {
   subnet_name         = "snet-a10corp-sales-stage-aks-nodes"
   identity_name       = "id-a10corp-sales-stage"
 
-  # Fixes for ACR access and NSG rules
+  # Infrastructure Access
   acr_id              = "/subscriptions/fdb297a9-2ece-469c-808d-a8227259f6e8/resourceGroups/rg-root-iac/providers/Microsoft.ContainerRegistry/registries/acra10corpsales"
+  storage_account_id  = "/subscriptions/fdb297a9-2ece-469c-808d-a8227259f6e8/resourceGroups/rg-root-iac/providers/Microsoft.Storage/storageAccounts/sta10corpsales"
   node_nsg_name       = "nsg-a10corp-sales-stage-aks-nodes"
 
   node_count          = 2
   vm_size             = "Standard_D2s_v3"
-
-  tags = {
-    Environment = "Stage"
-    Workload    = "SalesFulfillment"
-    ManagedBy   = "Terraform"
-  }
-}
-
-module "sql" {
-  source = "../../modules/azure-sql"
-
-  server_name         = "sql-a10sales-stage-v2"
-  database_name       = "db-sales-fulfillment"
-  resource_group_name = "rg-a10corp-sales-stage"
-  location            = "eastus2" 
-  
-  admin_username      = "sqladmin"
-  admin_password      = "P@ssw0rd123456!" # Note: Use variables/keyvault in production
-
-  aks_subnet_id       = module.aks.node_subnet_id
-  sku_name            = "Basic"
-
-  # Cross-region fix
-  enable_vnet_rule     = false
-  allow_azure_services = true
 
   tags = {
     Environment = "Stage"

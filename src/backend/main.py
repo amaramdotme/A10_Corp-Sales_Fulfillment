@@ -5,13 +5,24 @@ from typing import Optional
 from contextlib import asynccontextmanager
 import os
 import uuid
+import json
+
+# Azure Storage Imports
+try:
+    from azure.storage.blob import BlobServiceClient
+    from azure.identity import DefaultAzureCredential
+    HAS_AZURE = True
+except ImportError:
+    HAS_AZURE = False
+
+# --- Configuration ---
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///data/sales_fulfillment.db")
+STORAGE_ACCOUNT_NAME = os.environ.get("STORAGE_ACCOUNT_NAME")
+STORAGE_CONTAINER_NAME = os.environ.get("STORAGE_CONTAINER_NAME")
 
 # --- Database Setup ---
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///data/sales_fulfillment.db")
-
 # check_same_thread=False is only needed (and valid) for SQLite
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 def create_db_and_tables():
@@ -23,7 +34,6 @@ def get_session():
 
 # --- Models ---
 
-# Pydantic Schemas for API Request/Response
 class ClientBasicInfo(BaseModel):
     company_name: str
     address: str
@@ -44,26 +54,39 @@ class ClientSubmission(BaseModel):
     basic_info: ClientBasicInfo
     engagement_info: EngagementInfo
 
-# SQLModel for Database Persistence (Hybrid: Key fields + JSON payload)
 class Submission(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     client_id: str = Field(sa_type=String(50), index=True, unique=True)
-    
-    # Key Business Fields (Promoted for Indexing/Querying)
     company_name: str = Field(sa_type=String(255), index=True)
     industry: str = Field(sa_type=String(100), index=True)
     service_type: str = Field(sa_type=String(100), index=True)
-    
-    # Full Payload (JSON Storage for Flexibility)
     payload: str = Field(sa_type=String) # VARCHAR(MAX) equivalent
+
+# --- Helpers ---
+
+async def backup_to_blob(client_id: str, data: dict):
+    """Backs up the submission to Azure Blob Storage if configured."""
+    if not (HAS_AZURE and STORAGE_ACCOUNT_NAME and STORAGE_CONTAINER_NAME):
+        print("[BACKUP] Skipping blob backup (Azure libs or config missing)")
+        return
+
+    try:
+        account_url = f"https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net"
+        credential = DefaultAzureCredential()
+        blob_service_client = BlobServiceClient(account_url, credential=credential)
+        blob_client = blob_service_client.get_blob_client(container=STORAGE_CONTAINER_NAME, blob=f"{client_id}.json")
+        
+        blob_client.upload_blob(json.dumps(data, indent=2), overwrite=True)
+        print(f"[BACKUP] Successfully backed up {client_id} to blob storage.")
+    except Exception as e:
+        # We don't want to fail the main request if backup fails, but we should log it
+        print(f"[BACKUP] ERROR: Failed to backup to blob: {e}")
 
 # --- Lifespan Events ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Create tables
     create_db_and_tables()
     yield
-    # Shutdown: (Add cleanup logic here if needed)
 
 # --- App Definition ---
 app = FastAPI(title="A10 Corp Sales Fulfillment API", lifespan=lifespan)
@@ -74,10 +97,8 @@ async def health_check():
 
 @app.post("/submit")
 async def submit_onboarding(submission: ClientSubmission, session: Session = Depends(get_session)):
-    # Generate unique Client ID
     client_id = f"CL-{uuid.uuid4().hex[:8].upper()}"
     
-    # Hybrid Storage: Promote key fields, store the rest as JSON
     db_submission = Submission(
         client_id=client_id,
         company_name=submission.basic_info.company_name,
@@ -87,9 +108,14 @@ async def submit_onboarding(submission: ClientSubmission, session: Session = Dep
     )
     
     try:
+        # 1. Save to Database
         session.add(db_submission)
         session.commit()
         session.refresh(db_submission)
+        
+        # 2. Backup to Blob Storage (Asynchronous/Fire-and-forget)
+        await backup_to_blob(client_id, submission.model_dump())
+        
         return {"client_id": client_id, "message": "Submission received successfully"}
     except Exception as e:
         session.rollback()
@@ -97,4 +123,4 @@ async def submit_onboarding(submission: ClientSubmission, session: Session = Dep
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) # nosec
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -76,6 +76,19 @@ variable "acr_id" {
 }
 
 variable "node_nsg_name" {
+
   description = "The name of the existing Network Security Group for the AKS node subnet."
+
   type        = string
+
+}
+
+
+
+variable "storage_account_id" {
+
+  description = "The Resource ID of the Azure Storage Account for backups."
+
+  type        = string
+
 }

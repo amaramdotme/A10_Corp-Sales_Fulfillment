@@ -5,4 +5,5 @@ pydantic-settings
 pytest
 httpx
 sqlmodel
-pyodbc
+azure-storage-blob
+azure-identity

@@ -56,6 +56,13 @@ resource "azurerm_role_assignment" "acr_pull" {
   principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
 }
 
+# Grant Storage Blob Data Contributor to the Kubelet Identity
+resource "azurerm_role_assignment" "storage_contributor" {
+  scope                = var.storage_account_id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
+}
+
 # Add NSG rules to the existing NSG for the node pool
 resource "azurerm_network_security_rule" "allow_http" {
   name                        = "AllowHttpInboundFromInternet"

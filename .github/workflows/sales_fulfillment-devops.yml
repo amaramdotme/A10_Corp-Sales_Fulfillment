@@ -209,7 +209,8 @@ jobs:
             -f ./charts/sales-fulfillment/values-stage.yaml \
             --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
             --set backend.image.tag=${{ github.sha }} \
-            --set backend.env.databaseUrl="${{ steps.tf-apply.outputs.db_url }}" \
+            --set backend.env.storageAccountName="storerootblob" \
+            --set backend.env.storageContainerName="backups-stage" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.sha }} \
             --set frontend.env.backendUrl="http://backend.sales-fulfillment-stage.svc.cluster.local" \
