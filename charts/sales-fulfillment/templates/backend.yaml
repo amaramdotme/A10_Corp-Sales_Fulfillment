@@ -33,6 +33,10 @@ spec:
         imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
         ports:
         - containerPort: 8000
+        {{- if .Values.backend.resources }}
+        resources:
+          {{- toYaml .Values.backend.resources | nindent 10 }}
+        {{- end }}
         env:
         - name: DATABASE_URL
           value: {{ .Values.backend.env.databaseUrl | quote }}
