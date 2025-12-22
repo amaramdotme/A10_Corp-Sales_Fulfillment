@@ -109,14 +109,6 @@ resource "azurerm_network_security_rule" "allow_lb_probes" {
 # 3. This repo should only reference the storage account (data source)
 # ============================================================================
 
-# Extract storage account details from resource ID
-locals {
-  storage_account_id_parts = split("/", var.storage_account_id)
-  storage_rg_name          = local.storage_account_id_parts[4]
-  storage_account_name     = local.storage_account_id_parts[8]
-  storage_subscription_id  = local.storage_account_id_parts[2]
-}
-
 # Enable Microsoft.Storage service endpoint on AKS subnet
 # NOTE: This modifies a subnet managed by Foundation - should move there
 resource "null_resource" "enable_service_endpoint" {
@@ -133,12 +125,6 @@ resource "null_resource" "enable_service_endpoint" {
   }
 
   depends_on = [azurerm_kubernetes_cluster.aks]
-}
-
-# Data source for storage account
-data "azurerm_storage_account" "backup_storage" {
-  name                = local.storage_account_name
-  resource_group_name = local.storage_rg_name
 }
 
 # Configure storage account to accept traffic from AKS subnet
