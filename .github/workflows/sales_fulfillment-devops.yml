@@ -177,14 +177,6 @@ jobs:
             -backend-config="key=sales-fulfillment.tfstate"
           terraform apply -auto-approve
 
-      - name: Get Database URL
-        id: tf-apply
-        working-directory: infra/terraform/environments/stage
-        run: |
-          DB_URL=$(terraform output -raw database_url)
-          if [ -z "$DB_URL" ]; then echo "Error: database_url output is empty"; exit 1; fi
-          echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
-
       - name: Wait for RBAC Propagation
         run: sleep 60
 
@@ -264,14 +256,6 @@ jobs:
             -backend-config="key=sales-fulfillment.tfstate"
           terraform apply -auto-approve
 
-      - name: Get Database URL
-        id: tf-apply
-        working-directory: infra/terraform/environments/prod
-        run: |
-          DB_URL=$(terraform output -raw database_url)
-          if [ -z "$DB_URL" ]; then echo "Error: database_url output is empty"; exit 1; fi
-          echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
-
       - name: Wait for RBAC Propagation
         run: sleep 60
 
@@ -289,7 +273,8 @@ jobs:
             -f ./charts/sales-fulfillment/values-prod.yaml \
             --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
             --set backend.image.tag=${{ github.sha }} \
-            --set backend.env.databaseUrl="${{ steps.tf-apply.outputs.db_url }}" \
+            --set backend.env.storageAccountName="storerootblob" \
+            --set backend.env.storageContainerName="backups-prod" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.sha }} \
             --set frontend.env.backendUrl="http://backend.sales-fulfillment-prod.svc.cluster.local" \

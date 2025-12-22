@@ -48,12 +48,6 @@ jobs:
             -backend-config="container_name=workloads-prod" \
             -backend-config="key=sales-fulfillment.tfstate"
 
-      - name: Get Database URL
-        id: tf-output
-        working-directory: infra/terraform/environments/prod
-        run: |
-          echo "db_url=$(terraform output -raw database_url)" >> $GITHUB_OUTPUT
-
       - name: Get AKS Credentials
         run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
 
@@ -65,7 +59,8 @@ jobs:
             -f ./charts/sales-fulfillment/values-prod.yaml \
             --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
             --set backend.image.tag=${{ github.event.inputs.image_tag }} \
-            --set backend.env.databaseUrl="${{ steps.tf-output.outputs.db_url }}" \
+            --set backend.env.storageAccountName="storerootblob" \
+            --set backend.env.storageContainerName="backups-prod" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.event.inputs.image_tag }} \
             --set frontend.env.backendUrl="http://backend.sales-fulfillment-prod.svc.cluster.local" \
