@@ -192,6 +192,10 @@ jobs:
       - name: Get AKS Credentials
         run: az aks get-credentials --resource-group rg-a10corp-sales-stage --name aks-a10corp-sales-stage --subscription $ARM_SALES_SUBSCRIPTION_ID
 
+      - name: Verify ACR Connectivity
+        run: |
+          az aks check-acr --resource-group rg-a10corp-sales-stage --name aks-a10corp-sales-stage --acr acra10corpsales.azurecr.io
+
       - name: Deploy to AKS (Stage)
         run: |
           helm upgrade --install sales-app ./charts/sales-fulfillment \
