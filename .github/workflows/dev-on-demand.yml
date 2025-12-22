@@ -53,6 +53,9 @@ jobs:
           terraform apply -auto-approve
           echo "db_url=$(terraform output -raw database_url)" >> $GITHUB_OUTPUT
 
+      - name: Wait for RBAC Propagation
+        run: sleep 60
+
       - name: ACR Login
         run: az acr login --name $ACR_NAME
 

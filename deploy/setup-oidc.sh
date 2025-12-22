@@ -15,7 +15,19 @@ echo "Created App ID: $APP_ID"
 SP_ID=$(az ad sp create --id "$APP_ID" --query id -o tsv)
 echo "Created Service Principal Object ID: $SP_ID"
 
-# 3. Create Federated Identity Credentials for all environments
+# 3. Assign RBAC Roles
+# We need Contributor on the Sales subscription to manage clusters/DBs
+SALES_SUB_ID=$(az account show --subscription "sub-sales" --query id -o tsv)
+echo "Assigning Contributor to SP on Sales Subscription: $SALES_SUB_ID"
+az role assignment create --assignee "$SP_ID" --role "Contributor" --scope "/subscriptions/$SALES_SUB_ID"
+
+# We need User Access Administrator on the ROOT ACR to delegate AcrPull to AKS clusters
+ROOT_SUB_ID=$(az account show --subscription "sub-root" --query id -o tsv)
+ACR_ID=$(az acr show --name "acra10corpsales" --subscription "$ROOT_SUB_ID" --query id -o tsv)
+echo "Assigning User Access Administrator to SP on Root ACR: $ACR_ID"
+az role assignment create --assignee "$SP_ID" --role "User Access Administrator" --scope "$ACR_ID"
+
+# 4. Create Federated Identity Credentials for all environments
 ENVIRONMENTS=("dev" "stage" "prod")
 
 for ENV in "${ENVIRONMENTS[@]}"; do
