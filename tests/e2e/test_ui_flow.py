@@ -1,7 +1,8 @@
 from playwright.sync_api import Page, expect
+import os
 
 # Define the base URL - this can be overridden by environment variables if needed
-BASE_URL = "http://localhost:5003"
+BASE_URL = os.getenv("BASE_URL", "http://localhost:5003")
 
 def test_full_onboarding_flow(page: Page):
     # 1. Navigate to the home page

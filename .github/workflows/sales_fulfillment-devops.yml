@@ -132,12 +132,22 @@ jobs:
 
       - name: Port Forward Frontend
         run: |
-          kubectl port-forward svc/frontend 5003:80 -n sales-fulfillment & \
-          sleep 10
+          kubectl port-forward svc/frontend 5003:80 -n sales-fulfillment &
+          # Wait for port-forward to be active
+          for i in {1..10}; do
+            if curl -s http://localhost:5003 > /dev/null; then
+              echo "Port forward successful"
+              exit 0
+            fi
+            echo "Waiting for port-forward..."
+            sleep 2
+          done
+          echo "Port forward failed"
+          exit 1
 
       - name: Run E2E Tests (Playwright)
         run: |
-          pytest tests/e2e/test_ui_flow.py
+          BASE_URL="http://localhost:5003" PYTHONPATH=. pytest tests/e2e/test_ui_flow.py
 
   deploy-stage:
     runs-on: ubuntu-latest
