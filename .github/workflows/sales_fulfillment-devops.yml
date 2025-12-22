@@ -127,8 +127,26 @@ jobs:
         run: |
           kubectl wait --namespace sales-fulfillment \
             --for=condition=ready pod \
+            --selector=app=backend \
+            --timeout=180s
+          kubectl wait --namespace sales-fulfillment \
+            --for=condition=ready pod \
             --selector=app=frontend \
             --timeout=180s
+
+      - name: Verify Backend Health
+        run: |
+          echo "Checking backend health endpoint..."
+          for i in {1..30}; do
+            if kubectl exec -n sales-fulfillment deployment/sales-app-backend -- curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Backend is healthy"
+              exit 0
+            fi
+            echo "Waiting for backend health check (attempt $i)..."
+            sleep 2
+          done
+          echo "Backend health check failed"
+          exit 1
 
       - name: Port Forward Frontend
         run: |
