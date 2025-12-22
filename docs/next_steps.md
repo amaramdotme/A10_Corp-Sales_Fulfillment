@@ -3,8 +3,8 @@
 ## CI/CD
 - [x] **Implement `deploy-stage.yml` & `deploy-prod.yml`**:
     - Integrated into `sales_fulfillment-devops.yml`.
-- [x] **Implement Blue/Green Production strategy**:
-    - Managed via `deploy-prod-green` and `promote-to-prod.yml`.
+- [x] **Implement Direct Production Deployment strategy**:
+    - Replaced Blue/Green with Direct Deployment in `sales_fulfillment-devops.yml`.
 - [x] **Teardown on-demand**:
     - Implemented `teardown-on-demand.yml` for manual decommissioning.
 - [x] **Fix Dev On-Demand workflow**:
