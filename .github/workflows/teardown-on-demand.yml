@@ -24,15 +24,16 @@ env:
   ARM_SALES_SUBSCRIPTION_ID: ${{ secrets.AZURE_SALES_SUBSCRIPTION_ID }}
   TF_STATE_RG: rg-root-iac
   TF_STATE_STORAGE_ACCOUNT: storerootblob
-  TF_STATE_CONTAINER: workloads-${{ github.event.inputs.environment }}
   TF_STATE_KEY: sales-fulfillment.tfstate
-  RG_NAME: rg-a10corp-sales-${{ github.event.inputs.environment }}
-  CLUSTER_NAME: aks-a10corp-sales-${{ github.event.inputs.environment }}
 
 jobs:
   nuke:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
+    env:
+      RG_NAME: rg-a10corp-sales-${{ github.event.inputs.environment }}
+      CLUSTER_NAME: aks-a10corp-sales-${{ github.event.inputs.environment }}
+      TF_STATE_CONTAINER: workloads-${{ github.event.inputs.environment }}
     steps:
       - uses: actions/checkout@v4
 
