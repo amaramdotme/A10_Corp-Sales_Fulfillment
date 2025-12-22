@@ -3,7 +3,10 @@ global:
   namespace: sales-fulfillment-prod
 
 backend:
-  replicaCount: 3
+  # IMPORTANT: replicaCount MUST be 1 when using SQLite with ReadWriteOnce PVC
+  # Multiple replicas cannot attach to the same volume
+  # For HA, migrate to a shared database (PostgreSQL/MySQL)
+  replicaCount: 1
   image:
     repository: acra10corpsales.azurecr.io/sales-backend
     pullPolicy: Always
@@ -15,10 +18,11 @@ backend:
     limits:
       cpu: 1000m
       memory: 1Gi
+  # Autoscaling disabled for SQLite (requires shared DB for HA)
   autoscaling:
-    enabled: true
-    minReplicas: 3
-    maxReplicas: 10
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 1
     targetCPUUtilizationPercentage: 80
 
 frontend:

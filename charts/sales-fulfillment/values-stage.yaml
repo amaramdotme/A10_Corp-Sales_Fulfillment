@@ -3,7 +3,7 @@ global:
   namespace: sales-fulfillment-stage
 
 backend:
-  replicaCount: 2
+  replicaCount: 1
   image:
     repository: acra10corpsales.azurecr.io/sales-backend
     pullPolicy: Always
