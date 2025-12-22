@@ -15,5 +15,7 @@ frontend:
     repository: acra10corpsales.azurecr.io/sales-frontend
     pullPolicy: Always
     tag: "latest"
+  service:
+    type: LoadBalancer
   env:
     liveReload: "false"

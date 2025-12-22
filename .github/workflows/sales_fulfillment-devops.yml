@@ -210,8 +210,20 @@ jobs:
         run: |
           python -m pip install pytest playwright pytest-playwright
           playwright install chromium
-          IP=$(kubectl get svc frontend -n sales-fulfillment-stage -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-          BASE_URL="http://$IP" PYTHONPATH=. pytest tests/e2e/test_ui_flow.py
+          
+          echo "Waiting for Stage External IP..."
+          for i in {1..15}; do
+            IP=$(kubectl get svc frontend -n sales-fulfillment-stage -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            if [ -n "$IP" ]; then
+              echo "Stage URL: http://$IP"
+              BASE_URL="http://$IP" PYTHONPATH=. pytest tests/e2e/test_ui_flow.py
+              exit 0
+            fi
+            echo "Still waiting for IP (attempt $i)..."
+            sleep 10
+          done
+          echo "Timed out waiting for Stage External IP"
+          exit 1
 
   deploy-prod-green:
     runs-on: ubuntu-latest
