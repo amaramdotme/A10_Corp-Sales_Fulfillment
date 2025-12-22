@@ -6,7 +6,8 @@ A containerized Sales Fulfillment Application designed as a study exercise to ex
 ## Tech Stack
 - **Frontend:** Python FastHTML, MonsterUI
 - **Backend:** Python FastAPI
-- **Database:** SQLite (Local/Persistent), Azure Cosmos DB / SQL (Planned)
+- **Database:** SQLite (Container Persistent Volumes)
+- **Backup:** Azure Blob Storage (JSON backups)
 - **Infrastructure:** Docker, Kubernetes (Kind/AKS), Helm, Terraform
 
 ## Developer Persona
@@ -29,26 +30,29 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Implemented **Dev On-Demand** workflow for manual cloud lab testing.
 - ✅ Defined Platform Infrastructure requirements for Azure Stage environment.
 - ✅ Fixed and codified AKS-to-ACR permissions and NSG routing rules.
-- ✅ Implemented Azure SQL Terraform module and integrated it into Dev environment.
-- ✅ Updated backend application with MSSQL drivers and conditional database logic.
-- ✅ Improved **Dev On-Demand** workflow with automatic SQL provisioning and full teardown.
+- ✅ Migrated from Azure SQL to SQLite with Azure Blob Storage backups for simplicity.
 - ✅ Fixed FastHTML infinite refresh loop by making live reload configurable.
 - ✅ Implemented comprehensive DevOps pipeline with automated Stage deployment and Playwright verification.
 - ✅ Established Blue/Green deployment strategy for Production with manual promotion.
 - ✅ Created **Teardown On-Demand** workflow for safe environment decommissioning.
 - ✅ Resolved `ImagePullBackOff` issues with RBAC propagation wait (60s).
+- ✅ Fixed Dev On-Demand workflow (added missing Terraform Apply step).
+- ✅ Configured Azure Service Endpoints for secure AKS-to-Blob Storage connectivity.
+- ✅ Implemented storage account network rules to allow AKS subnet access via service endpoints.
 
 ## TODO List
 - [x] **Infrastructure:** Implement Database Terraform module in this repo.
-- [ ] **Infrastructure:** Refactor VNET/Subnet/NSG ownership from Foundation to this repo (Workload Landing Zone).
 - [x] **Cloud Deploy:** Implement Job #2 (Stage) and Job #3 (Prod) in GitHub Actions.
+- [ ] **Infrastructure:** Move storage account network rules to Foundation repo (currently temporary workaround).
+- [ ] **Infrastructure:** Move service endpoint configuration to Foundation repo (subnet ownership).
 - [ ] **Security:** Implement Azure AD (Entra ID) authentication for application.
 - [ ] **Observability:** Set up Azure Monitor and Log Analytics integration.
 
 ## Next Session Plan
-1.  **Security Implementation:**
+1.  **Infrastructure Refactoring:**
+    - Move storage account network rules and service endpoint configuration to Foundation repo.
+    - Better aligns with poly-repo architecture (Platform owns infrastructure, Workload consumes).
+2.  **Security Implementation:**
     - Implement Azure AD (Entra ID) authentication for the frontend using MSAL or similar.
-2.  **Infrastructure Refactoring:**
-    - Refactor VNET/Subnet/NSG ownership from the Foundation repo to this repo for better self-containment.
 3.  **Observability:**
     - Integrate Azure Monitor and Log Analytics for better workload visibility.
