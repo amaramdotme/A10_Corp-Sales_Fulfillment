@@ -12,12 +12,7 @@
 
 ## Infrastructure
 - [x] **Database Strategy**: Migrated from Azure SQL to SQLite with Azure Blob Storage backups.
-- [x] **Storage Network Access**: Configured Azure Service Endpoints for AKS-to-Blob connectivity.
-- [ ] **Fix Storage Network Rules Terraform Conflict**:
-    - Terraform trying to create `azurerm_storage_account_network_rules` but resource already exists
-    - Options to discuss: Import existing rules, use `null_resource` with CLI, or manage differently
-    - Affects both dev and stage deployments
-- [ ] **Infrastructure Refactoring**: Move storage network rules and service endpoints to Foundation repo.
+- [x] **Storage Network Access**: Foundation team updated storage account to allow all traffic (matches Terraform state storage configuration).
 - [ ] **Observability**: Set up Azure Monitor and Log Analytics integration.
 
 ## Security

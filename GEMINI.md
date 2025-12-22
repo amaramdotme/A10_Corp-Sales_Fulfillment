@@ -37,22 +37,19 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Created **Teardown On-Demand** workflow for safe environment decommissioning.
 - ✅ Resolved `ImagePullBackOff` issues with RBAC propagation wait (60s).
 - ✅ Fixed Dev On-Demand workflow (added missing Terraform Apply step).
-- ✅ Configured Azure Service Endpoints for secure AKS-to-Blob Storage connectivity.
-- ✅ Implemented storage account network rules to allow AKS subnet access via service endpoints.
+- ✅ Resolved storage account network access (Foundation updated to defaultAction: Allow).
 
 ## TODO List
 - [x] **Infrastructure:** Implement Database Terraform module in this repo.
 - [x] **Cloud Deploy:** Implement Job #2 (Stage) and Job #3 (Prod) in GitHub Actions.
-- [ ] **Infrastructure:** Move storage account network rules to Foundation repo (currently temporary workaround).
-- [ ] **Infrastructure:** Move service endpoint configuration to Foundation repo (subnet ownership).
+- [x] **Infrastructure:** Storage account network access resolved by Foundation team.
 - [ ] **Security:** Implement Azure AD (Entra ID) authentication for application.
 - [ ] **Observability:** Set up Azure Monitor and Log Analytics integration.
 
 ## Next Session Plan
-1.  **Infrastructure Refactoring:**
-    - Move storage account network rules and service endpoint configuration to Foundation repo.
-    - Better aligns with poly-repo architecture (Platform owns infrastructure, Workload consumes).
-2.  **Security Implementation:**
+1.  **Security Implementation:**
     - Implement Azure AD (Entra ID) authentication for the frontend using MSAL or similar.
-3.  **Observability:**
+2.  **Observability:**
     - Integrate Azure Monitor and Log Analytics for better workload visibility.
+3.  **Testing:**
+    - Verify blob backup functionality works end-to-end in Dev environment.

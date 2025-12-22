@@ -77,19 +77,22 @@ This document captures key architectural decisions for the A10 Corp Sales Fulfil
     *   **Phase 2 (Switch):** A manual workflow (`promote-to-prod.yml`) upgrades the main `sales-app` release to the new images and uninstalls the green release.
 *   **Reasoning:** Minimizes risk by validating the "Green" version in the real production environment before making it user-facing.
 
-## 13. Azure Service Endpoints for Blob Storage Access
-*   **Status:** Accepted (2025-12-22)
-*   **Context:** AKS pods need to write JSON backups to Azure Blob Storage. Storage account has restrictive network rules (default deny) for security. IP-based allowlisting doesn't work well for dynamic AKS pod IPs.
-*   **Decision:** Use **Azure Service Endpoints** to enable secure connectivity from AKS subnet to storage account.
-    *   Enable `Microsoft.Storage` service endpoint on AKS node subnet
-    *   Configure storage account to allow traffic from AKS subnet via VNet rules
-    *   Use managed identity (kubelet identity) for authentication (Storage Blob Data Contributor role)
+## 13. Storage Account Network Access Strategy
+*   **Status:** Superseded (2025-12-22)
+*   **Context:** AKS pods need to write JSON backups to Azure Blob Storage. Initial investigation showed storage account with restrictive network rules (default deny).
+*   **Original Decision:** Considered using Azure Service Endpoints with VNet rules for secure connectivity.
+*   **Final Decision:** Foundation team configured storage account to **match Terraform state storage** (`storerootblob`):
+    *   `defaultAction: Allow` (permissive, simplified)
+    *   `bypass: AzureServices`
+    *   No IP or VNet restrictions
+    *   Authentication via managed identity (Storage Blob Data Contributor role)
 *   **Reasoning:**
-    *   Traffic stays on Azure backbone (secure, private, no public internet)
-    *   No need to manage dynamic IP allowlists
-    *   Works across subscriptions (storage in `sub-root`, AKS in `sub-sales`)
-    *   Maintains storage account's restrictive firewall (deny by default)
+    *   Aligns with existing Foundation pattern for shared storage accounts
+    *   Simpler operational model - no VNet service endpoint management
+    *   Reduces poly-repo coordination complexity
+    *   Authentication still secured via RBAC (managed identity required)
 *   **Consequences:**
-    *   **Temporary Implementation:** Due to poly-repo architecture, configuration is temporarily in Workload repo
-    *   **TODO:** Move to Foundation repo - Platform team should own storage network rules and subnet service endpoints
-    *   Portal access to storage requires manual IP allowlisting or temporarily setting `defaultAction: Allow`
+    *   Storage account accessible from any network (with valid credentials)
+    *   Relies on RBAC and encryption for security vs network isolation
+    *   Consistent with Terraform state storage security posture
+    *   No workload-specific network configuration needed
