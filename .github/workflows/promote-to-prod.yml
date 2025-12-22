@@ -1,0 +1,75 @@
+name: Promote Green to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'The image tag (SHA) to promote to main production'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SALES_SUBSCRIPTION_ID: ${{ secrets.AZURE_SALES_SUBSCRIPTION_ID }}
+  TF_STATE_RG: rg-root-iac
+  TF_STATE_STORAGE_ACCOUNT: storerootblob
+  ACR_NAME: acra10corpsales
+  RG_NAME: rg-a10corp-sales-prod
+  CLUSTER_NAME: aks-a10corp-sales-prod
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: infra/terraform/environments/prod
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$TF_STATE_RG" \
+            -backend-config="storage_account_name=$TF_STATE_STORAGE_ACCOUNT" \
+            -backend-config="container_name=workloads-prod" \
+            -backend-config="key=sales-fulfillment.tfstate"
+
+      - name: Get Database URL
+        id: tf-output
+        working-directory: infra/terraform/environments/prod
+        run: |
+          echo "db_url=$(terraform output -raw database_url)" >> $GITHUB_OUTPUT
+
+      - name: Get AKS Credentials
+        run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
+
+      - name: Deploy to Main Production
+        run: |
+          helm upgrade --install sales-app ./charts/sales-fulfillment \
+            --namespace sales-fulfillment \
+            --create-namespace \
+            -f ./charts/sales-fulfillment/values-prod.yaml \
+            --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
+            --set backend.image.tag=${{ github.event.inputs.image_tag }} \
+            --set backend.env.databaseUrl="${{ steps.tf-output.outputs.db_url }}" \
+            --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
+            --set frontend.image.tag=${{ github.event.inputs.image_tag }} \
+            --set global.environment=prod
+
+      - name: Cleanup Green Version
+        run: |
+          helm uninstall sales-app-green --namespace sales-fulfillment || true

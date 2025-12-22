@@ -55,3 +55,16 @@ This document captures key architectural decisions for the A10 Corp Sales Fulfil
 *   **Context:** B-Series burstable instances (like B2s) can have restricted availability or quota limitations in certain regions (e.g., eastus).
 *   **Decision:** Prefer **Standard_D2s_v3** (D-Series) for AKS nodes.
 *   **Consequences:** Slightly higher cost than B-series, but provides consistent performance and significantly better regional availability/quota support.
+
+## 10. Database Backend: Azure SQL
+*   **Status:** Accepted (2025-12-21)
+*   **Context:** The application needs a scalable, managed database for production environments. SQLite is used for local development and testing.
+*   **Decision:** Use **Azure SQL (Single Database)**.
+*   **Reasoning:** Provides a fully managed, relational database that integrates seamlessly with Azure Managed Identities and Virtual Networks.
+*   **Consequences:** Requires installing MSSQL ODBC drivers in the backend container image and updating the application to handle SQLAlchemy's `mssql+pyodbc` connection strings.
+
+## 11. FastHTML Live Reload Configuration
+*   **Status:** Accepted (2025-12-21)
+*   **Context:** FastHTML's `live=True` feature causes an infinite refresh loop when accessed through an Azure Load Balancer.
+*   **Decision:** Disable `live` reload by default and make it configurable via the `LIVE_RELOAD` environment variable.
+*   **Consequences:** Prevents routing issues in deployed environments while maintaining development productivity in local Kind clusters.

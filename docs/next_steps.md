@@ -1,18 +1,15 @@
 # Next Steps
 
 ## CI/CD
-- [ ] **Implement `deploy-dev.yml`**: 
-    - Create a GitHub Action workflow to deploy to the Azure Dev environment (`rg-a10corp-sales-dev`).
-    - Trigger on merge to `main`.
-    - Steps:
-        - Log in to Azure (OIDC).
-        - Terraform Apply (ensure AKS cluster exists).
-        - Build and Push Docker images to ACR.
-        - Helm Upgrade/Install to AKS.
-    - **Cost Optimization**: Ensure the Terraform configuration for this environment uses Spot instances and enables the cluster autoscaler. Consider adding a nightly shutdown workflow.
+- [ ] **Implement `deploy-stage.yml` & `deploy-prod.yml`**: 
+    - Create GitHub Action workflows for Stage and Prod environments.
+    - Trigger on merge to `main` (Stage) and tagged releases (Prod).
+- [x] **Refine `dev-on-demand.yml`**:
+    - Added automatic provisioning and teardown of Azure SQL.
+    - Integrated Terraform outputs with Helm deployment.
 
 ## Infrastructure
-- [ ] **Database Module**: Implement Terraform module for Azure SQL or CosmosDB.
+- [x] **Database Module**: Implemented Terraform module for Azure SQL with VNet security rules.
 - [ ] **Observability**: Set up Azure Monitor and Log Analytics integration.
 
 ## Security

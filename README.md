@@ -6,8 +6,9 @@ This application is designed as a study exercise to explore Azure Kubernetes Ser
 
 - **Frontend:** Python FastHTML with MonsterUI.
 - **Backend:** FastAPI.
+- **Database:** SQLite (Local) / Azure SQL (Deployed).
 - **Local Dev:** Docker Compose / Kind.
-- **Infrastructure:** Terraform (targeting AKS).
+- **Infrastructure:** Terraform (targeting AKS and Azure SQL).
 
 ## Getting Started
 

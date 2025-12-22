@@ -1,0 +1,74 @@
+name: Teardown On-Demand
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to nuke (dev, stage, prod)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SALES_SUBSCRIPTION_ID: ${{ secrets.AZURE_SALES_SUBSCRIPTION_ID }}
+  TF_STATE_RG: rg-root-iac
+  TF_STATE_STORAGE_ACCOUNT: storerootblob
+  TF_STATE_CONTAINER: workloads-${{ github.event.inputs.environment }}
+  TF_STATE_KEY: sales-fulfillment.tfstate
+  RG_NAME: rg-a10corp-sales-${{ github.event.inputs.environment }}
+  CLUSTER_NAME: aks-a10corp-sales-${{ github.event.inputs.environment }}
+
+jobs:
+  nuke:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: infra/terraform/environments/${{ github.event.inputs.environment }}
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$TF_STATE_RG" \
+            -backend-config="storage_account_name=$TF_STATE_STORAGE_ACCOUNT" \
+            -backend-config="container_name=$TF_STATE_CONTAINER" \
+            -backend-config="key=$TF_STATE_KEY"
+
+      - name: Get AKS Credentials
+        run: |
+          if az aks show --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID &> /dev/null; then
+            az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
+            echo "CLUSTER_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "Cluster not found, skipping Helm uninstall."
+            echo "CLUSTER_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Uninstall Helm Release
+        if: env.CLUSTER_EXISTS == 'true'
+        run: helm uninstall sales-app --namespace sales-fulfillment || true
+
+      - name: Terraform Destroy
+        working-directory: infra/terraform/environments/${{ github.event.inputs.environment }}
+        run: terraform destroy -auto-approve
