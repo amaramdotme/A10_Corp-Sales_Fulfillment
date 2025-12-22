@@ -57,11 +57,15 @@ This document captures key architectural decisions for the A10 Corp Sales Fulfil
 *   **Consequences:** Slightly higher cost than B-series, but provides consistent performance and significantly better regional availability/quota support.
 
 ## 10. Database Backend: Azure SQL
-*   **Status:** Accepted (2025-12-21)
-*   **Context:** The application needs a scalable, managed database for production environments. SQLite is used for local development and testing.
-*   **Decision:** Use **Azure SQL (Single Database)**.
-*   **Reasoning:** Provides a fully managed, relational database that integrates seamlessly with Azure Managed Identities and Virtual Networks.
-*   **Consequences:** Requires installing MSSQL ODBC drivers in the backend container image and updating the application to handle SQLAlchemy's `mssql+pyodbc` connection strings.
+*   **Status:** Superseded (2025-12-21)
+*   **Context:** The application was initially planned to use Azure SQL for production.
+*   **Decision:** Revert to **SQLite with Azure Blob Storage backups**.
+*   **Reasoning:** 
+    *   Significant reduction in architectural complexity for the initial pilot.
+    *   Avoids managing complex SQL connection strings and drivers.
+    *   Durability is achieved via JSON backups to highly available blob storage.
+    *   Alignment with organization's current preference for cost-efficient, simplified storage for this scale.
+*   **Consequences:** Limits the application to a single backend replica (see Decision 14).
 
 ## 11. FastHTML Live Reload Configuration
 *   **Status:** Accepted (2025-12-21)
@@ -78,21 +82,25 @@ This document captures key architectural decisions for the A10 Corp Sales Fulfil
 *   **Reasoning:** Minimizes risk by validating the "Green" version in the real production environment before making it user-facing.
 
 ## 13. Storage Account Network Access Strategy
-*   **Status:** Superseded (2025-12-22)
+*   **Status:** Accepted (2025-12-22)
 *   **Context:** AKS pods need to write JSON backups to Azure Blob Storage. Initial investigation showed storage account with restrictive network rules (default deny).
-*   **Original Decision:** Considered using Azure Service Endpoints with VNet rules for secure connectivity.
-*   **Final Decision:** Foundation team configured storage account to **match Terraform state storage** (`storerootblob`):
+*   **Decision:** Foundation team configured storage account to **match Terraform state storage** (`storerootblob`):
     *   `defaultAction: Allow` (permissive, simplified)
     *   `bypass: AzureServices`
-    *   No IP or VNet restrictions
     *   Authentication via managed identity (Storage Blob Data Contributor role)
-*   **Reasoning:**
-    *   Aligns with existing Foundation pattern for shared storage accounts
-    *   Simpler operational model - no VNet service endpoint management
-    *   Reduces poly-repo coordination complexity
-    *   Authentication still secured via RBAC (managed identity required)
+*   **Reasoning:** Simplifies the stack and aligns with the organization's existing storage patterns for shared accounts.
+
+## 14. Backend Replica Limit (SQLite Compatibility)
+*   **Status:** Accepted (2025-12-22)
+*   **Context:** Using SQLite with a standard ReadWriteOnce (RWO) persistent volume prevents multiple pods from concurrently mounting the volume.
+*   **Decision:** Hard-limit the backend to **1 replica** in all environments.
 *   **Consequences:**
-    *   Storage account accessible from any network (with valid credentials)
-    *   Relies on RBAC and encryption for security vs network isolation
-    *   Consistent with Terraform state storage security posture
-    *   No workload-specific network configuration needed
+    *   Reduces horizontal scalability.
+    *   Rolling updates must be handled carefully (scale to 0, then to 1) to release volume locks.
+    *   HA would require migration back to a shared database (PostgreSQL/Azure SQL).
+
+## 15. Observability: Azure Monitor for Containers (OMS Agent)
+*   **Status:** Accepted (2025-12-22)
+*   **Context:** We need centralized logging and metrics for troubleshooting and performance monitoring.
+*   **Decision:** Enable the **OMS Agent** (Container Insights) on all AKS clusters, pointing to the centralized `log-a10corp-hq` Log Analytics Workspace.
+*   **Consequences:** Provides automatic collection of stdout/stderr logs and cluster metrics without requiring sidecars or application-level changes.

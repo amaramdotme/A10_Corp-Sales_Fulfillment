@@ -13,7 +13,10 @@
 ## Infrastructure
 - [x] **Database Strategy**: Migrated from Azure SQL to SQLite with Azure Blob Storage backups.
 - [x] **Storage Network Access**: Foundation team updated storage account to allow all traffic (matches Terraform state storage configuration).
-- [ ] **Observability**: Set up Azure Monitor and Log Analytics integration.
+- [x] **Observability**: Set up Azure Monitor and Log Analytics integration.
+
+## Cost Management
+- [x] **Automated Shutdown**: Implemented `shutdown-all-env.yml` to scale workloads to 0 in all environments when not in use.
 
 ## Security
 - [ ] **Entra ID Integration**: Implement Azure AD authentication for the application.
