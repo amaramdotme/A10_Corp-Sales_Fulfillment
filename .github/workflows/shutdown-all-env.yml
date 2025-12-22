@@ -1,0 +1,111 @@
+name: Shutdown All On Demand (Cost Saver)
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SALES_SUBSCRIPTION_ID: ${{ secrets.AZURE_SALES_SUBSCRIPTION_ID }}
+
+jobs:
+  shutdown-dev:
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      RG_NAME: rg-a10corp-sales-dev
+      CLUSTER_NAME: aks-a10corp-sales-dev
+      NAMESPACE: sales-fulfillment
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Check and Scale Down Dev
+        run: |
+          if az aks show --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID &> /dev/null; then
+            echo "Cluster found. Getting credentials..."
+            az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
+            
+            echo "Scaling down all deployments in $NAMESPACE to 0..."
+            # Check if namespace exists first
+            if kubectl get namespace $NAMESPACE &> /dev/null; then
+               kubectl scale deployment --all --replicas=0 -n $NAMESPACE
+               echo "Dev environment shutdown complete."
+            else
+               echo "Namespace $NAMESPACE not found, skipping scale down."
+            fi
+          else
+            echo "Cluster $CLUSTER_NAME not found, skipping shutdown."
+          fi
+
+  shutdown-stage:
+    runs-on: ubuntu-latest
+    environment: stage
+    env:
+      RG_NAME: rg-a10corp-sales-stage
+      CLUSTER_NAME: aks-a10corp-sales-stage
+      NAMESPACE: sales-fulfillment-stage
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Check and Scale Down Stage
+        run: |
+          if az aks show --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID &> /dev/null; then
+            echo "Cluster found. Getting credentials..."
+            az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
+            
+            echo "Scaling down all deployments in $NAMESPACE to 0..."
+            if kubectl get namespace $NAMESPACE &> /dev/null; then
+               kubectl scale deployment --all --replicas=0 -n $NAMESPACE
+               echo "Stage environment shutdown complete."
+            else
+               echo "Namespace $NAMESPACE not found, skipping scale down."
+            fi
+          else
+            echo "Cluster $CLUSTER_NAME not found, skipping shutdown."
+          fi
+
+  shutdown-prod:
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      RG_NAME: rg-a10corp-sales-prod
+      CLUSTER_NAME: aks-a10corp-sales-prod
+      NAMESPACE: sales-fulfillment-prod
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Check and Scale Down Prod
+        run: |
+          if az aks show --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID &> /dev/null; then
+            echo "Cluster found. Getting credentials..."
+            az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
+            
+            echo "Scaling down all deployments in $NAMESPACE to 0..."
+            if kubectl get namespace $NAMESPACE &> /dev/null; then
+               kubectl scale deployment --all --replicas=0 -n $NAMESPACE
+               echo "Prod environment shutdown complete."
+            else
+               echo "Namespace $NAMESPACE not found, skipping scale down."
+            fi
+          else
+            echo "Cluster $CLUSTER_NAME not found, skipping shutdown."
+          fi

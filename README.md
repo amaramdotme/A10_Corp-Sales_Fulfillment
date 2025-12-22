@@ -7,6 +7,7 @@ This application is designed as a study exercise to explore Azure Kubernetes Ser
 - **Frontend:** Python FastHTML with MonsterUI.
 - **Backend:** FastAPI.
 - **Database:** SQLite (Persistent Volumes in Kubernetes).
+  - *Note:* Backend is restricted to 1 replica due to SQLite's file-locking nature with ReadWriteOnce volumes.
 - **Backup:** Azure Blob Storage (JSON backups via managed identity).
 - **Local Dev:** Docker Compose / Kind.
 - **Infrastructure:** Terraform (targeting AKS), Helm charts for multi-environment deployment.

@@ -66,6 +66,19 @@ jobs:
             --set frontend.env.backendUrl="http://backend.sales-fulfillment-prod.svc.cluster.local" \
             --set global.environment=prod
 
+      - name: Get Production Environment URL
+        run: |
+          echo "Waiting for Production External IP..."
+          for i in {1..15}; do
+            IP=$(kubectl get svc frontend -n sales-fulfillment-prod -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            if [ -n "$IP" ]; then
+              echo "Production URL: http://$IP"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for Production External IP"
+
       - name: Cleanup Green Version
         run: |
           helm uninstall sales-app-green --namespace sales-fulfillment-prod || true

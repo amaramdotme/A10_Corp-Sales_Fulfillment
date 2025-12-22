@@ -37,12 +37,14 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Created **Teardown On-Demand** workflow for safe environment decommissioning.
 - ✅ Resolved `ImagePullBackOff` issues with RBAC propagation wait (60s).
 - ✅ Fixed Dev On-Demand workflow (added missing Terraform Apply step).
-- ✅ Resolved storage account network access (Foundation updated to defaultAction: Allow).
+- ✅ Fixed Multi-Attach error in Stage/Prod by setting backend replicaCount to 1 (SQLite compatibility).
+- ✅ Verified Stage deployment and E2E tests pass.
 
 ## TODO List
 - [x] **Infrastructure:** Implement Database Terraform module in this repo.
 - [x] **Cloud Deploy:** Implement Job #2 (Stage) and Job #3 (Prod) in GitHub Actions.
 - [x] **Infrastructure:** Storage account network access resolved by Foundation team.
+- [x] **Fix:** Resolved Multi-Attach error for backend deployment.
 - [ ] **Security:** Implement Azure AD (Entra ID) authentication for application.
 - [ ] **Observability:** Set up Azure Monitor and Log Analytics integration.
 
