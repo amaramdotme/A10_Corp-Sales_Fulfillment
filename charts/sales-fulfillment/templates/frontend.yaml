@@ -19,6 +19,10 @@ spec:
         imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
         ports:
         - containerPort: 5003
+        {{- if .Values.frontend.resources }}
+        resources:
+          {{- toYaml .Values.frontend.resources | nindent 10 }}
+        {{- end }}
         env:
         - name: BACKEND_URL
           value: {{ .Values.frontend.env.backendUrl | quote }}

@@ -18,12 +18,6 @@ backend:
     limits:
       cpu: 1000m
       memory: 1Gi
-  # Autoscaling disabled for SQLite (requires shared DB for HA)
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 1
-    targetCPUUtilizationPercentage: 80
 
 frontend:
   replicaCount: 3
@@ -42,8 +36,3 @@ frontend:
     limits:
       cpu: 500m
       memory: 512Mi
-  autoscaling:
-    enabled: true
-    minReplicas: 3
-    maxReplicas: 10
-    targetCPUUtilizationPercentage: 80

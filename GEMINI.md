@@ -33,7 +33,7 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Migrated from Azure SQL to SQLite with Azure Blob Storage backups for simplicity.
 - ✅ Fixed FastHTML infinite refresh loop by making live reload configurable.
 - ✅ Implemented comprehensive DevOps pipeline with automated Stage deployment and Playwright verification.
-- ✅ Established Blue/Green deployment strategy for Production with manual promotion.
+- ✅ Replaced Blue/Green deployment with Direct Deployment for Production (replicating Stage strategy).
 - ✅ Created **Teardown On-Demand** workflow for safe environment decommissioning.
 - ✅ Resolved `ImagePullBackOff` issues with RBAC propagation wait (60s).
 - ✅ Fixed Dev On-Demand workflow (added missing Terraform Apply step).
