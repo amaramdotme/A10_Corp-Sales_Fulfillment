@@ -11,6 +11,10 @@ output "kube_config_raw" {
   sensitive = true
 }
 
+output "kubelet_identity_client_id" {
+  value = azurerm_kubernetes_cluster.aks.kubelet_identity[0].client_id
+}
+
 output "node_resource_group" {
   value = azurerm_kubernetes_cluster.aks.node_resource_group
 }

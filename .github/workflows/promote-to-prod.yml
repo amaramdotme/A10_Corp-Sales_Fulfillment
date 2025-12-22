@@ -47,6 +47,7 @@ jobs:
             -backend-config="storage_account_name=$TF_STATE_STORAGE_ACCOUNT" \
             -backend-config="container_name=workloads-prod" \
             -backend-config="key=sales-fulfillment.tfstate"
+          echo "KUBELET_CLIENT_ID=$(terraform output -raw kubelet_identity_client_id)" >> $GITHUB_ENV
 
       - name: Get AKS Credentials
         run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
@@ -61,6 +62,7 @@ jobs:
             --set backend.image.tag=${{ github.event.inputs.image_tag }} \
             --set backend.env.storageAccountName="sta10corpsales" \
             --set backend.env.storageContainerName="backups-prod" \
+            --set backend.env.azureClientId="$KUBELET_CLIENT_ID" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.event.inputs.image_tag }} \
             --set frontend.env.backendUrl="http://backend.sales-fulfillment-prod.svc.cluster.local" \

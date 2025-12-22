@@ -180,6 +180,7 @@ jobs:
             -backend-config="container_name=workloads-stage" \
             -backend-config="key=sales-fulfillment.tfstate"
           terraform apply -auto-approve
+          echo "KUBELET_CLIENT_ID=$(terraform output -raw kubelet_identity_client_id)" >> $GITHUB_ENV
 
       - name: Wait for RBAC Propagation
         run: sleep 60
@@ -207,6 +208,7 @@ jobs:
             --set backend.image.tag=${{ github.sha }} \
             --set backend.env.storageAccountName="sta10corpsales" \
             --set backend.env.storageContainerName="backups-stage" \
+            --set backend.env.azureClientId="$KUBELET_CLIENT_ID" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.sha }} \
             --set frontend.env.backendUrl="http://backend.sales-fulfillment-stage.svc.cluster.local" \
@@ -273,12 +275,20 @@ jobs:
             -backend-config="container_name=workloads-prod" \
             -backend-config="key=sales-fulfillment.tfstate"
           terraform apply -auto-approve
+          echo "KUBELET_CLIENT_ID=$(terraform output -raw kubelet_identity_client_id)" >> $GITHUB_ENV
 
       - name: Wait for RBAC Propagation
         run: sleep 60
 
       - name: ACR Login
         run: az acr login --name $ACR_NAME
+
+      - name: Build and Push Images
+        run: |
+          docker build -t $ACR_NAME.azurecr.io/sales-frontend:${{ github.sha }} -f src/frontend/Dockerfile src/frontend
+          docker build -t $ACR_NAME.azurecr.io/sales-backend:${{ github.sha }} -f src/backend/Dockerfile src/backend
+          docker push $ACR_NAME.azurecr.io/sales-frontend:${{ github.sha }}
+          docker push $ACR_NAME.azurecr.io/sales-backend:${{ github.sha }}
 
       - name: Get AKS Credentials
         run: az aks get-credentials --resource-group rg-a10corp-sales-prod --name aks-a10corp-sales-prod --subscription $ARM_SALES_SUBSCRIPTION_ID
@@ -293,6 +303,7 @@ jobs:
             --set backend.image.tag=${{ github.sha }} \
             --set backend.env.storageAccountName="sta10corpsales" \
             --set backend.env.storageContainerName="backups-prod" \
+            --set backend.env.azureClientId="$KUBELET_CLIENT_ID" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.sha }} \
             --set frontend.env.backendUrl="http://backend.sales-fulfillment-prod.svc.cluster.local" \

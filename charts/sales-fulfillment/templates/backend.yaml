@@ -38,6 +38,10 @@ spec:
           value: {{ .Values.backend.env.storageAccountName | quote }}
         - name: STORAGE_CONTAINER_NAME
           value: {{ .Values.backend.env.storageContainerName | quote }}
+        {{- if .Values.backend.env.azureClientId }}
+        - name: AZURE_CLIENT_ID
+          value: {{ .Values.backend.env.azureClientId | quote }}
+        {{- end }}
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.backend.persistence.mountPath }}

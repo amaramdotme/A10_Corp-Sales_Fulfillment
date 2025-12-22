@@ -1,7 +1,3 @@
-output "node_resource_group" {
-  value = module.aks.node_resource_group
-}
-
-output "storage_account_name" {
-  value = "sta10corpsales"
+output "kubelet_identity_client_id" {
+  value = module.aks.kubelet_identity_client_id
 }
