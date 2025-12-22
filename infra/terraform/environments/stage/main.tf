@@ -11,9 +11,10 @@ module "aks" {
   identity_name       = "id-a10corp-sales-stage"
 
   # Infrastructure Access
-  acr_id              = "/subscriptions/fdb297a9-2ece-469c-808d-a8227259f6e8/resourceGroups/rg-root-iac/providers/Microsoft.ContainerRegistry/registries/acra10corpsales"
-  storage_account_id  = "/subscriptions/fdb297a9-2ece-469c-808d-a8227259f6e8/resourceGroups/rg-root-iac/providers/Microsoft.Storage/storageAccounts/sta10corpsales"
-  node_nsg_name       = "nsg-a10corp-sales-stage-aks-nodes"
+  acr_id                     = "/subscriptions/fdb297a9-2ece-469c-808d-a8227259f6e8/resourceGroups/rg-root-iac/providers/Microsoft.ContainerRegistry/registries/acra10corpsales"
+  storage_account_id         = "/subscriptions/fdb297a9-2ece-469c-808d-a8227259f6e8/resourceGroups/rg-root-iac/providers/Microsoft.Storage/storageAccounts/sta10corpsales"
+  log_analytics_workspace_id = "/subscriptions/fdb297a9-2ece-469c-808d-a8227259f6e8/resourceGroups/rg-root-iac/providers/Microsoft.OperationalInsights/workspaces/log-a10corp-hq"
+  node_nsg_name              = "nsg-a10corp-sales-stage-aks-nodes"
 
   node_count          = 2
   vm_size             = "Standard_D2s_v3"

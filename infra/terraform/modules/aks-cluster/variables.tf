@@ -92,3 +92,8 @@ variable "storage_account_id" {
   type        = string
 
 }
+
+variable "log_analytics_workspace_id" {
+  description = "The Resource ID of the Log Analytics Workspace for Container Insights."
+  type        = string
+}

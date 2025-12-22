@@ -59,7 +59,7 @@ jobs:
             -f ./charts/sales-fulfillment/values-prod.yaml \
             --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
             --set backend.image.tag=${{ github.event.inputs.image_tag }} \
-            --set backend.env.storageAccountName="storerootblob" \
+            --set backend.env.storageAccountName="sta10corpsales" \
             --set backend.env.storageContainerName="backups-prod" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.event.inputs.image_tag }} \
