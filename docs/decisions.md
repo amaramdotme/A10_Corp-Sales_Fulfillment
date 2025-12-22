@@ -68,3 +68,11 @@ This document captures key architectural decisions for the A10 Corp Sales Fulfil
 *   **Context:** FastHTML's `live=True` feature causes an infinite refresh loop when accessed through an Azure Load Balancer.
 *   **Decision:** Disable `live` reload by default and make it configurable via the `LIVE_RELOAD` environment variable.
 *   **Consequences:** Prevents routing issues in deployed environments while maintaining development productivity in local Kind clusters.
+
+## 12. Blue/Green Production Deployment Strategy
+*   **Status:** Accepted (2025-12-22)
+*   **Context:** Production deployments should be zero-downtime and easy to roll back if failures occur during startup or data migration.
+*   **Decision:** Use a Blue/Green strategy with a manual promotion gate.
+    *   **Phase 1 (Green):** CI/CD deploys a parallel Helm release (`sales-app-green`) to the production namespace.
+    *   **Phase 2 (Switch):** A manual workflow (`promote-to-prod.yml`) upgrades the main `sales-app` release to the new images and uninstalls the green release.
+*   **Reasoning:** Minimizes risk by validating the "Green" version in the real production environment before making it user-facing.

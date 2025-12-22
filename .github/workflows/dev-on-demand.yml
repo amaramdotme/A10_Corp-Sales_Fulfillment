@@ -1,4 +1,5 @@
 name: Dev On-Demand
+
 on:
   workflow_dispatch:
 
@@ -75,10 +76,10 @@ jobs:
             --create-namespace \
             -f ./charts/sales-fulfillment/values-dev.yaml \
             --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
-            --set backend.image.tag:${{ github.sha }} \
+            --set backend.image.tag=${{ github.sha }} \
             --set backend.env.databaseUrl="${{ steps.tf-apply.outputs.db_url }}" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
-            --set frontend.image.tag:${{ github.sha }} \
+            --set frontend.image.tag=${{ github.sha }} \
             --set global.environment=dev
 
       - name: Get Frontend External IP
@@ -94,7 +95,7 @@ jobs:
             sleep 10
           done
 
-teardown-dev:
+  teardown-dev:
     runs-on: ubuntu-latest
     needs: deploy-dev
     environment: dev # Requires manual approval in GitHub settings
@@ -120,9 +121,16 @@ teardown-dev:
             -backend-config="key=$TF_STATE_KEY"
 
       - name: Get AKS Credentials
-        run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
+        run: |
+          if az aks show --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID &> /dev/null; then
+            az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
+            echo "CLUSTER_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "CLUSTER_EXISTS=false" >> $GITHUB_ENV
+          fi
 
       - name: Uninstall Helm Release
+        if: env.CLUSTER_EXISTS == 'true'
         run: helm uninstall sales-app --namespace sales-fulfillment || true
 
       - name: Terraform Destroy

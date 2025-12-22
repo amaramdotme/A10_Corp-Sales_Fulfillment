@@ -33,20 +33,22 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Updated backend application with MSSQL drivers and conditional database logic.
 - ✅ Improved **Dev On-Demand** workflow with automatic SQL provisioning and full teardown.
 - ✅ Fixed FastHTML infinite refresh loop by making live reload configurable.
+- ✅ Implemented comprehensive DevOps pipeline with automated Stage deployment and Playwright verification.
+- ✅ Established Blue/Green deployment strategy for Production with manual promotion.
+- ✅ Created **Teardown On-Demand** workflow for safe environment decommissioning.
+- ✅ Resolved `ImagePullBackOff` issues with RBAC propagation wait (60s).
 
 ## TODO List
 - [x] **Infrastructure:** Implement Database Terraform module in this repo.
 - [ ] **Infrastructure:** Refactor VNET/Subnet/NSG ownership from Foundation to this repo (Workload Landing Zone).
-- [ ] **Cloud Deploy:** Implement Job #2 (Stage) and Job #3 (Prod) in GitHub Actions.
+- [x] **Cloud Deploy:** Implement Job #2 (Stage) and Job #3 (Prod) in GitHub Actions.
 - [ ] **Security:** Implement Azure AD (Entra ID) authentication for application.
 - [ ] **Observability:** Set up Azure Monitor and Log Analytics integration.
 
 ## Next Session Plan
-1.  **DevOps Pipeline Overhaul:**
-    - Update `sales_fulfillment-devops.yml` to include `terraform plan` in the validation phase.
-    - Implement the Stage deployment job with a manual approval gate.
-    - Implement a Blue/Green strategy for Production (Green deploy -> Approval -> Switch).
-2.  **Resource Management:**
-    - Create `teardown-on-demand.yml` for manual, environment-specific cleanup.
-3.  **Security Implementation:**
-    - Implement Azure AD (Entra ID) authentication for the frontend.
+1.  **Security Implementation:**
+    - Implement Azure AD (Entra ID) authentication for the frontend using MSAL or similar.
+2.  **Infrastructure Refactoring:**
+    - Refactor VNET/Subnet/NSG ownership from the Foundation repo to this repo for better self-containment.
+3.  **Observability:**
+    - Integrate Azure Monitor and Log Analytics for better workload visibility.
