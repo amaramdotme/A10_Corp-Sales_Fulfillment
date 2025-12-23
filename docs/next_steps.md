@@ -15,7 +15,7 @@
 ## Infrastructure
 - [x] **Database Strategy**: Migrated from Azure SQL to SQLite with Azure Blob Storage backups.
 - [x] **Storage Network Access**: Foundation team updated storage account to allow all traffic.
-- [x] **Blob Backup Fix**: Resolved `AuthorizationPermissionMismatch` and `Multiple user assigned identities exist` by correcting storage account name and explicitly setting `AZURE_CLIENT_ID`.
+- [x] **Blob Backup Verification**: Confirmed JSON backups are successfully written to `sta10corpsales` in `backups-stage`.
 - [x] **Observability**: Set up Azure Monitor and Log Analytics integration.
 
 ## Cost Management
@@ -24,6 +24,7 @@
 ## Observability Utilization
 - [x] **Log Queries**: Created `docs/observability_queries.md` and saved KQL queries (prefixed with `a10_`) to the Log Analytics Workspace.
 - [x] **Dashboards**: Created Chart/Visualization variants for key metrics (App Logs, Errors, Restarts, CPU/Memory) accessible via "Saved Searches".
+- [ ] **Advanced Observability**: Implement a Terraform-managed Azure Dashboard (`azurerm_portal_dashboard`) to pin the KQL visualizations for a unified view.
 
 ## Security
 - [ ] **Entra ID Integration**: Implement Azure AD authentication for the application.
