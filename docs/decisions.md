@@ -73,13 +73,16 @@ This document captures key architectural decisions for the A10 Corp Sales Fulfil
 *   **Decision:** Disable `live` reload by default and make it configurable via the `LIVE_RELOAD` environment variable.
 *   **Consequences:** Prevents routing issues in deployed environments while maintaining development productivity in local Kind clusters.
 
-## 12. Blue/Green Production Deployment Strategy
+## 12. Direct Production Deployment Strategy (Replacing Blue/Green)
 *   **Status:** Accepted (2025-12-22)
-*   **Context:** Production deployments should be zero-downtime and easy to roll back if failures occur during startup or data migration.
-*   **Decision:** Use a Blue/Green strategy with a manual promotion gate.
-    *   **Phase 1 (Green):** CI/CD deploys a parallel Helm release (`sales-app-green`) to the production namespace.
-    *   **Phase 2 (Switch):** A manual workflow (`promote-to-prod.yml`) upgrades the main `sales-app` release to the new images and uninstalls the green release.
-*   **Reasoning:** Minimizes risk by validating the "Green" version in the real production environment before making it user-facing.
+*   **Context:** The initial plan for Blue/Green deployment proved complex for a single-replica SQLite-based application. Using a parallel "Green" release caused resource contention and complexity with persistent volume claims.
+*   **Decision:** Revert to a **Direct Deployment** strategy (same as Stage).
+    *   **Workflow:** The `deploy-prod` job directly upgrades the existing Helm release (`sales-app`).
+    *   **Strategy:** Uses `type: Recreate` (from Decision 14) to ensure the old pod terminates and releases the volume lock before the new one starts.
+*   **Reasoning:**
+    *   Simplifies the CI/CD pipeline significantly.
+    *   Avoids PVC/Multi-Attach errors inherent to running parallel deployments with ReadWriteOnce volumes.
+    *   The brief downtime (seconds) during the `Recreate` phase is acceptable for this internal tool's SLA.
 
 ## 13. Storage Account Network Access Strategy
 *   **Status:** Accepted (2025-12-22)
