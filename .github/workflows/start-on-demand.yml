@@ -1,7 +1,16 @@
-name: Dev On-Demand
-
+name: Start On-Demand
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to start/provision (dev, stage, prod)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
 
 permissions:
   id-token: write
@@ -14,16 +23,18 @@ env:
   ARM_SALES_SUBSCRIPTION_ID: ${{ secrets.AZURE_SALES_SUBSCRIPTION_ID }}
   TF_STATE_RG: rg-root-iac
   TF_STATE_STORAGE_ACCOUNT: storerootblob
-  TF_STATE_CONTAINER: workloads-dev
   TF_STATE_KEY: sales-fulfillment.tfstate
   ACR_NAME: acra10corpsales
-  RG_NAME: rg-a10corp-sales-dev
-  CLUSTER_NAME: aks-a10corp-sales-dev
 
 jobs:
-  deploy-dev:
+  start:
     runs-on: ubuntu-latest
-    environment: dev
+    environment: ${{ github.event.inputs.environment }}
+    env:
+      RG_NAME: rg-a10corp-sales-${{ github.event.inputs.environment }}
+      CLUSTER_NAME: aks-a10corp-sales-${{ github.event.inputs.environment }}
+      TF_STATE_CONTAINER: workloads-${{ github.event.inputs.environment }}
+      VALUES_FILE: values-${{ github.event.inputs.environment }}.yaml
     steps:
       - uses: actions/checkout@v4
 
@@ -38,7 +49,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        working-directory: infra/terraform/environments/dev
+        working-directory: infra/terraform/environments/${{ github.event.inputs.environment }}
         run: |
           terraform init \
             -backend-config="resource_group_name=$TF_STATE_RG" \
@@ -47,7 +58,7 @@ jobs:
             -backend-config="key=$TF_STATE_KEY"
 
       - name: Terraform Apply
-        working-directory: infra/terraform/environments/dev
+        working-directory: infra/terraform/environments/${{ github.event.inputs.environment }}
         run: |
           terraform apply -auto-approve
           echo "KUBELET_CLIENT_ID=$(terraform output -raw kubelet_identity_client_id)" >> $GITHUB_ENV
@@ -68,30 +79,41 @@ jobs:
       - name: Get AKS Credentials
         run: az aks get-credentials --resource-group $RG_NAME --name $CLUSTER_NAME --subscription $ARM_SALES_SUBSCRIPTION_ID
 
+      - name: Set Environment Variables
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
+            echo "NAMESPACE=sales-fulfillment" >> $GITHUB_ENV
+            echo "BACKEND_URL=http://backend.sales-fulfillment.svc.cluster.local" >> $GITHUB_ENV
+          else
+            echo "NAMESPACE=sales-fulfillment-${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+            echo "BACKEND_URL=http://backend.sales-fulfillment-${{ github.event.inputs.environment }}.svc.cluster.local" >> $GITHUB_ENV
+          fi
+
       - name: Deploy to AKS
         run: |
           helm upgrade --install sales-app ./charts/sales-fulfillment \
-            --namespace sales-fulfillment \
+            --namespace $NAMESPACE \
             --create-namespace \
-            -f ./charts/sales-fulfillment/values-dev.yaml \
+            -f ./charts/sales-fulfillment/${{ env.VALUES_FILE }} \
             --set backend.image.repository=$ACR_NAME.azurecr.io/sales-backend \
             --set backend.image.tag=${{ github.sha }} \
             --set backend.env.storageAccountName="sta10corpsales" \
-            --set backend.env.storageContainerName="backups-dev" \
+            --set backend.env.storageContainerName="backups-${{ github.event.inputs.environment }}" \
             --set backend.env.azureClientId="$KUBELET_CLIENT_ID" \
             --set frontend.image.repository=$ACR_NAME.azurecr.io/sales-frontend \
             --set frontend.image.tag=${{ github.sha }} \
-            --set global.environment=dev
+            --set frontend.env.backendUrl="$BACKEND_URL" \
+            --set global.environment=${{ github.event.inputs.environment }}
 
-      - name: Get Frontend External IP
+      - name: Get External IP
         run: |
           echo "Waiting for External IP..."
-          for i in {1..10}; do
-            IP=$(kubectl get svc frontend -n sales-fulfillment -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          for i in {1..15}; do
+            IP=$(kubectl get svc frontend -n $NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             if [ -n "$IP" ]; then
-              echo "APP_URL=http://$IP" >> $GITHUB_ENV
-              echo "Frontend URL: http://$IP"
-              break
+              echo "App URL: http://$IP"
+              exit 0
             fi
             sleep 10
           done
+          echo "Timed out waiting for External IP"

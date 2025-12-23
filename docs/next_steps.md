@@ -7,8 +7,8 @@
     - Replaced Blue/Green with Direct Deployment in `sales_fulfillment-devops.yml`.
 - [x] **Teardown on-demand**:
     - Implemented `teardown-on-demand.yml` for manual decommissioning.
-- [x] **Fix Dev On-Demand workflow**:
-    - Added missing Terraform Apply step.
+- [x] **Consolidate On-Demand workflows**:
+    - Merged `dev-on-demand.yml` into a parameterized `start-on-demand.yml` for all environments.
 - [x] **Fix Prod Deployment**: Reduced node count for vCPU quota and resolved NSG conflicts.
 - [x] **Fix SQLite Deadlock**: Implemented `Recreate` deployment strategy to handle RWO volume locking.
 

@@ -27,7 +27,7 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Added E2E Integration Tests (Kind + Playwright) to CI pipeline.
 - ✅ Implemented AKS Terraform Module (Stage and Dev environments configured).
 - ✅ Set up GitHub OIDC for keyless Azure authentication.
-- ✅ Implemented **Dev On-Demand** workflow for manual cloud lab testing.
+- ✅ Implemented **Start On-Demand** workflow (consolidated dev/stage/prod provisioning).
 - ✅ Defined Platform Infrastructure requirements for Azure Stage environment.
 - ✅ Fixed and codified AKS-to-ACR permissions and NSG routing rules.
 - ✅ Migrated from Azure SQL to SQLite with Azure Blob Storage backups for simplicity.
@@ -36,7 +36,7 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Replaced Blue/Green deployment with Direct Deployment for Production (replicating Stage strategy).
 - ✅ Created **Teardown On-Demand** workflow for safe environment decommissioning.
 - ✅ Resolved `ImagePullBackOff` issues with RBAC propagation wait (60s).
-- ✅ Fixed Dev On-Demand workflow (added missing Terraform Apply step).
+- ✅ Consolidated On-Demand workflows (merged Dev into Start On-Demand).
 - ✅ Fixed Multi-Attach error in Stage/Prod by setting backend replicaCount to 1 (SQLite compatibility).
 - ✅ Verified Stage deployment and E2E tests pass.
 
