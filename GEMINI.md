@@ -39,19 +39,18 @@ I am an interactive CLI agent specializing in software engineering, focusing on 
 - ✅ Consolidated On-Demand workflows (merged Dev into Start On-Demand).
 - ✅ Fixed Multi-Attach error in Stage/Prod by setting backend replicaCount to 1 (SQLite compatibility).
 - ✅ Verified Stage deployment and E2E tests pass.
+- ✅ Implemented KQL Query Library for Log Analytics visualization.
 
 ## TODO List
 - [x] **Infrastructure:** Implement Database Terraform module in this repo.
 - [x] **Cloud Deploy:** Implement Job #2 (Stage) and Job #3 (Prod) in GitHub Actions.
 - [x] **Infrastructure:** Storage account network access resolved by Foundation team.
 - [x] **Fix:** Resolved Multi-Attach error for backend deployment.
+- [x] **Observability:** Set up Azure Monitor and Log Analytics integration.
 - [ ] **Security:** Implement Azure AD (Entra ID) authentication for application.
-- [ ] **Observability:** Set up Azure Monitor and Log Analytics integration.
 
 ## Next Session Plan
 1.  **Security Implementation:**
     - Implement Azure AD (Entra ID) authentication for the frontend using MSAL or similar.
-2.  **Observability:**
-    - Integrate Azure Monitor and Log Analytics for better workload visibility.
-3.  **Testing:**
+2.  **Testing:**
     - Verify blob backup functionality works end-to-end in Dev environment.

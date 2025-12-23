@@ -1,42 +1,27 @@
-# Observability Queries (KQL)
+import subprocess
+import json
+import re
 
-This document contains useful Kusto Query Language (KQL) queries for monitoring the Sales Fulfillment application. These queries are also saved in the `log-a10corp-hq` Log Analytics Workspace under the **A10_SalesFulfillment** category.
+RESOURCE_GROUP = "rg-root-iac"
+WORKSPACE_NAME = "log-a10corp-hq"
+CATEGORY = "A10_SalesFulfillment" # Updated category name as well
 
-## How to Use in Azure Portal
-1. Go to the [Azure Portal](https://portal.azure.com).
-2. Search for **Log Analytics Workspaces** and select `log-a10corp-hq`.
-3. Click on **Logs** in the left sidebar.
-4. Click on the **Queries** tab and search for **"a10"**.
-5. You will see all the queries listed below.
-
----
-
-## 1. a10_App Logs (All)
-See all stdout/stderr logs from the frontend and backend across all environments.
-
-**Table Version:**
-```kql
-ContainerLog
+# Define base queries and their chart variants
+# Display names will now start with a10_
+queries = {
+    "a10_App Logs (All)": """ContainerLog
 | where LogEntrySource == "stdout" or LogEntrySource == "stderr"
 | extend ContainerName = extract("([^/]+)$", 1, ContainerID)
 | project TimeGenerated, LogEntry, ContainerName, LogEntrySource
-| sort by TimeGenerated desc
-```
+| sort by TimeGenerated desc""",
 
-**Chart Version (a10_App Logs (All) Chart):**
-```kql
-ContainerLog
+    "a10_App Logs (All) Chart": """ContainerLog
 | where LogEntrySource == "stdout" or LogEntrySource == "stderr"
 | extend ContainerName = extract("([^/]+)$", 1, ContainerID)
 | summarize LogCount = count() by bin(TimeGenerated, 5m), ContainerName
-| render columnchart with (kind=stacked)
-```
+| render columnchart with (kind=stacked)""",
 
-## 2. a10_Environment-Specific Logs
-
-**a10_App Logs (Table):**
-```kql
-let env_namespace = "sales-fulfillment-prod"; // Change to -stage or sales-fulfillment for dev
+    "a10_App Logs (Table)": """let env_namespace = "sales-fulfillment-prod";
 KubePodInventory
 | where Namespace == env_namespace
 | project ContainerID, PodName = Name, Namespace
@@ -45,12 +30,9 @@ KubePodInventory
     | extend ContainerName = extract("([^/]+)$", 1, ContainerID)
 ) on ContainerID
 | project TimeGenerated, Namespace, PodName, LogEntry
-| sort by TimeGenerated desc
-```
+| sort by TimeGenerated desc""",
 
-**a10_App Logs (Chart):**
-```kql
-let env_namespace = "sales-fulfillment-prod"; // Change to -stage or sales-fulfillment for dev
+    "a10_App Logs (Chart)": """let env_namespace = "sales-fulfillment-prod";
 KubePodInventory
 | where Namespace == env_namespace
 | project ContainerID, PodName = Name, Namespace
@@ -59,97 +41,94 @@ KubePodInventory
     | extend ContainerName = extract("([^/]+)$", 1, ContainerID)
 ) on ContainerID
 | summarize LogCount = count() by bin(TimeGenerated, 5m), PodName
-| render columnchart with (kind=stacked)
-```
+| render columnchart with (kind=stacked)""",
 
-## 3. a10_Error Tracking
-
-**Table Version:**
-```kql
-ContainerLog
+    "a10_Error Tracking": """ContainerLog
 | where LogEntry contains "ERROR" or LogEntry contains "Exception" or LogEntry contains "500"
 | extend ContainerName = extract("([^/]+)$", 1, ContainerID)
 | project TimeGenerated, LogEntry, ContainerName
-| sort by TimeGenerated desc
-```
+| sort by TimeGenerated desc""",
 
-**Chart Version (a10_Error Tracking Chart):**
-```kql
-ContainerLog
+    "a10_Error Tracking Chart": """ContainerLog
 | where LogEntry contains "ERROR" or LogEntry contains "Exception" or LogEntry contains "500"
 | extend ContainerName = extract("([^/]+)$", 1, ContainerID)
 | summarize ErrorCount = count() by bin(TimeGenerated, 5m), ContainerName
-| render timechart
-```
+| render timechart""",
 
-## 4. a10_Pod Restarts
-
-**Table Version:**
-```kql
-KubePodInventory
+    "a10_Pod Restarts": """KubePodInventory
 | where ContainerRestartCount > 0
 | summarize MaxRestartCount = max(ContainerRestartCount) by Name, Namespace, ControllerName
 | where MaxRestartCount > 0
-| order by MaxRestartCount desc
-```
+| order by MaxRestartCount desc""",
 
-**Chart Version (a10_Pod Restarts Chart):**
-```kql
-KubePodInventory
+    "a10_Pod Restarts Chart": """KubePodInventory
 | where ContainerRestartCount > 0
 | summarize MaxRestartCount = max(ContainerRestartCount) by bin(TimeGenerated, 30m), Name
-| render timechart
-```
+| render timechart""",
 
-## 5. a10_CPU and Memory Chart
-```kql
-Perf
+    "a10_CPU and Memory Chart": """Perf
 | where ObjectName == "K8SContainer"
 | where CounterName == "cpuUsageNanoCores" or CounterName == "memoryWorkingSetBytes"
 | extend InstanceName = extract("([^/]+)$", 1, InstanceName)
 | summarize AverageValue = avg(CounterValue) by CounterName, InstanceName, bin(TimeGenerated, 1h)
-| render timechart
-```
+| render timechart""",
 
-## 6. a10_Backend Health Chart
-```kql
-ContainerLog
+    "a10_Backend Health Chart": """ContainerLog
 | where LogEntry contains "GET /health"
 | summarize count() by bin(TimeGenerated, 5m)
-| render timechart
-```
+| render timechart""",
 
-## 7. a10_Network Traffic Chart
-```kql
-Perf
+    "a10_Network Traffic Chart": """Perf
 | where ObjectName == "K8SContainer"
 | where CounterName == "networkRxBytes" or CounterName == "networkTxBytes"
 | extend InstanceName = extract("([^/]+)$", 1, InstanceName)
 | summarize TotalBytes = sum(CounterValue) by CounterName, InstanceName, bin(TimeGenerated, 1h)
-| render timechart
-```
+| render timechart""",
 
-## 8. a10_Internal DNS Failures
-
-**Table Version:**
-```kql
-KubePodInventory
+    "a10_Internal DNS Failures": """KubePodInventory
 | where Namespace == "kube-system" and Name contains "coredns"
 | join kind=inner (
     ContainerLog
     | where LogEntry contains "ERROR" or LogEntry contains "SERVFAIL"
 ) on ContainerID
-| project TimeGenerated, LogEntry
-```
+| project TimeGenerated, LogEntry""",
 
-**Chart Version (a10_Internal DNS Failures Chart):**
-```kql
-KubePodInventory
+    "a10_Internal DNS Failures Chart": """KubePodInventory
 | where Namespace == "kube-system" and Name contains "coredns"
 | join kind=inner (
     ContainerLog
     | where LogEntry contains "ERROR" or LogEntry contains "SERVFAIL"
 ) on ContainerID
 | summarize FailureCount = count() by bin(TimeGenerated, 5m)
-| render timechart
-```
+| render timechart"""
+}
+
+def create_saved_search(name, query):
+    # Sanitize name for ID (remove all non-alphanumeric characters, must start with letter)
+    search_id = re.sub(r'[^a-zA-Z0-9]', '', name)
+    
+    cmd = [
+        "az", "monitor", "log-analytics", "workspace", "saved-search", "create",
+        "--resource-group", RESOURCE_GROUP,
+        "--workspace-name", WORKSPACE_NAME,
+        "--name", search_id,
+        "--display-name", name,
+        "--category", CATEGORY,
+        "--saved-query", query
+    ]
+    
+    print(f"Creating/Updating query: {name}...")
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            print(f"Successfully created '{name}'")
+        else:
+            print(f"Failed to create '{name}':")
+            print(result.stderr)
+    except Exception as e:
+        print(f"Error executing command for '{name}': {e}")
+
+# First, attempt to delete existing ones in the old category if possible, 
+# but simply creating new ones with the prefix is cleaner for finding them.
+for name, query in queries.items():
+    create_saved_search(name, query)

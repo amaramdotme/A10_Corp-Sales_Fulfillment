@@ -22,8 +22,8 @@
 - [x] **Automated Shutdown**: Implemented `shutdown-all-env.yml` to scale workloads to 0 in all environments when not in use.
 
 ## Observability Utilization
-- [ ] **Log Queries**: Create KQL queries to monitor application logs.
-- [ ] **Dashboards**: Set up basic Azure Monitor dashboards for cluster health.
+- [x] **Log Queries**: Created `docs/observability_queries.md` and saved KQL queries (prefixed with `a10_`) to the Log Analytics Workspace.
+- [x] **Dashboards**: Created Chart/Visualization variants for key metrics (App Logs, Errors, Restarts, CPU/Memory) accessible via "Saved Searches".
 
 ## Security
 - [ ] **Entra ID Integration**: Implement Azure AD authentication for the application.
